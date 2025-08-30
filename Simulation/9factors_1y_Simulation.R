@@ -24,7 +24,7 @@ sample_size <- SS[4]
 ## strong condition
 lambda <- matrix(runif(36, min = 0.5, max = 0.8), nrow = 4, ncol = 9)
 ## weak condition
-#lambda <- matrix(runif(36, min = 0.2, max = 0.5), nrow = 4, ncol = 9)
+# lambda <- matrix(runif(36, min = 0.2, max = 0.5), nrow = 4, ncol = 9)
 
 colnames(lambda) <- c(paste0("eta", c(1:9)))
 ## get different format loadings (with 0)
@@ -41,7 +41,7 @@ beta0 <- 0
 ## strong condition
 beta <- runif(9, min = 0.25, max = 0.4)
 ## weak condition
-#beta <- runif(9, min = 0.15, max = 0.25)
+# beta <- runif(9, min = 0.15, max = 0.25)
 
 # data generate
 Uniq <- diag(1 - rowSums(P_loadings ^ 2))
