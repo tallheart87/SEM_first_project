@@ -1,5 +1,7 @@
 # Factor correction
 source("function/factor_correction.R")
+#Criteria
+source("function/PL_criteria.R")
 # SAM
 source("function/factor9/3.1_SAM_PartitionedEstimation.R")
 source("function/factor9/3.2_SAM_ComputeSummaryStats.R")
@@ -7,8 +9,9 @@ source("function/factor9/3.3_SAM_RegressionCoefs.R")
 # rESEM
 source("function/factor9/5_rESEM_function.R")
 # PLS_prediction
-source("function/factor9/7_simplePLS.R")
-source("function/factor9/7_PLSpredict.R")
+source("function/factor9/7.1_simplePLS.R")
+source("function/factor9/7.2_PLSpredict.R")
+source("function/factor9/7.3_get_intercepts.R")
 #-------------------------------------------------------------------------------
 # Data generation
 #-------------------------------------------------------------------------------
@@ -41,6 +44,7 @@ X <- MASS::mvrnorm(n = sample_size,
                    Sigma = SIGMA,
                    empirical = TRUE
 )
+# Score <- t(solve(P_loadings %*% t(P_loadings) + Uniq) %*% P_loadings) %*% t(X)
 Score <- t(solve(Uniq) %*% P_loadings %*% solve(t(P_loadings) %*% solve(Uniq) %*% P_loadings)) %*% t(X)
 Y <- rep(beta0, sample_size) + beta[1] * Score[1, ] + 
                                beta[2] * Score[2, ] + 
@@ -98,14 +102,15 @@ colnames(OFS) <- methods
 # Measurement model part
 congruence <- matrix(NA, nrow = ncol(P_loadings), ncol = length(methods))
 colnames(congruence) <- methods
+PL_rate <- matrix(NA, nrow = 1, ncol = length(methods))
+colnames(PL_rate) <- methods
 
 # Structure model part
 bias_beta0 <- matrix(NA, nrow = 1, ncol = length(methods))
 colnames(bias_beta0) <- methods
-bias_beta1 <- matrix(NA, nrow = 1, ncol = length(methods))
-colnames(bias_beta1) <- methods
-bias_beta2 <- matrix(NA, nrow = 1, ncol = length(methods))
-colnames(bias_beta2) <- methods
+bias_beta <- matrix(NA, nrow = length(beta), ncol = length(methods))
+colnames(bias_beta) <- methods
+rownames(bias_beta) <- paste0("b",c(1:length(beta)))
 bias_betaALL <- matrix(NA, nrow = 1, ncol = length(methods))
 colnames(bias_betaALL) <- methods
 
@@ -152,13 +157,13 @@ RMSE[1, "SumScore_E"] <- sqrt(sum((Y_test-Y_hat)^2) / (sample_size/2))
 OFS[1, "SumScore_E"] <- (sum((Y_test-Y_hat)^2) / sum((Y_test)^2))
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "SumScore_E"] <- diag(psych::factor.congruence(weight_Emp, P_loadings))
+congruence[1:ncol(P_loadings), "SumScore_E"] <- diag(abs(psych::factor.congruence(weight_Emp, P_loadings)))
+PL_rate[1, "SumScore_E"] <- PL(P_loadings, weight_Emp)
 
 #### Regression coefficient
 bias_beta0[1, "SumScore_E"] <- abs(reg_coef[1]-beta0)
-bias_beta1[1, "SumScore_E"] <- abs(reg_coef[2]-beta1)
-bias_beta2[1, "SumScore_E"] <- abs(reg_coef[3]-beta2)
-bias_betaALL[1, "SumScore_E"] <- abs(sum(bias_beta0[1, "SumScore_E"], bias_beta1[1, "SumScore_E"], bias_beta2[1, "SumScore_E"]))
+bias_beta[, "SumScore_E"] <- abs(reg_coef[-1]-beta)
+bias_betaALL[1, "SumScore_E"] <- mean(c(bias_beta0[1, "SumScore_E"], bias_beta[, "SumScore_E"]))
 
 #-------------------------------------------------------------------------------
 
@@ -208,15 +213,15 @@ test_score1 <- t(test_score1)
 
 ### Step 4. Calculate the predicted variable
 Y_hat <- rep(reg_coef[1],length(Y_test)) + 
-  test_score1[,1]*reg_coef[2] + 
-  test_score1[,2]*reg_coef[3] +
-  test_score1[,3]*reg_coef[4] + 
-  test_score1[,4]*reg_coef[5] +
-  test_score1[,5]*reg_coef[6] + 
-  test_score1[,6]*reg_coef[7] +
-  test_score1[,7]*reg_coef[8] + 
-  test_score1[,8]*reg_coef[9] +
-  test_score1[,9]*reg_coef[10] 
+             test_score1[,1]*reg_coef[2] + 
+             test_score1[,2]*reg_coef[3] +
+             test_score1[,3]*reg_coef[4] + 
+             test_score1[,4]*reg_coef[5] +
+             test_score1[,5]*reg_coef[6] + 
+             test_score1[,6]*reg_coef[7] +
+             test_score1[,7]*reg_coef[8] + 
+             test_score1[,8]*reg_coef[9] +
+             test_score1[,9]*reg_coef[10] 
 ### Step 5. Criteria
 #### Prediction
 MAE[1, "SEM_Reg"] <- sum(abs(Y_test-Y_hat)) / (sample_size/2)
@@ -224,13 +229,13 @@ RMSE[1, "SEM_Reg"] <- sqrt(sum((Y_test-Y_hat)^2) / (sample_size/2))
 OFS[1, "SEM_Reg"] <- (sum((Y_test-Y_hat)^2) / sum((Y_test)^2))
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "SEM_Reg"] <- diag(psych::factor.congruence(res_loading, P_loadings))
+congruence[1:ncol(P_loadings), "SEM_Reg"] <- diag(abs(psych::factor.congruence(res_loading, P_loadings)))
+PL_rate[1, "SEM_Reg"] <- PL(P_loadings, res_loading)
 
 #### Regression coefficient
 bias_beta0[1, "SEM_Reg"] <- abs(reg_coef[1]-beta0)
-bias_beta1[1, "SEM_Reg"] <- abs(reg_coef[2]-beta1)
-bias_beta2[1, "SEM_Reg"] <- abs(reg_coef[3]-beta2)
-bias_betaALL[1, "SEM_Reg"] <- abs(sum(bias_beta0[1, "SEM_Reg"], bias_beta1[1, "SEM_Reg"], bias_beta2[1, "SEM_Reg"]))
+bias_beta[, "SEM_Reg"] <- abs(reg_coef[-1]-beta)
+bias_betaALL[1, "SEM_Reg"] <- mean(c(bias_beta0[1, "SEM_Reg"], bias_beta[, "SEM_Reg"]))
 
 
 #2.1 Traditional SEM, Bartlett method
@@ -256,19 +261,13 @@ RMSE[1, "SEM_Bar"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "SEM_Bar"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "SEM_Bar"] <- diag(psych::factor.congruence(res_loading, P_loadings))
+congruence[1:ncol(P_loadings), "SEM_Bar"] <- diag(abs(psych::factor.congruence(res_loading, P_loadings)))
+PL_rate[1, "SEM_Bar"] <- PL(P_loadings, res_loading)
 
 #### Regression coefficient
-bias_beta0[1, "SEM_Bar"] <- abs(reg_coef[1] - beta0)
-bias_beta1[1, "SEM_Bar"] <- abs(reg_coef[2] - beta1)
-bias_beta2[1, "SEM_Bar"] <- abs(reg_coef[3] - beta2)
-bias_betaALL[1, "SEM_Bar"] <- abs(
-  sum(
-    bias_beta0[1, "SEM_Bar"],
-    bias_beta1[1, "SEM_Bar"],
-    bias_beta2[1, "SEM_Bar"]
-  )
-)
+bias_beta0[1, "SEM_Bar"] <- abs(reg_coef[1]-beta0)
+bias_beta[, "SEM_Bar"] <- abs(reg_coef[-1]-beta)
+bias_betaALL[1, "SEM_Bar"] <- mean(c(bias_beta0[1, "SEM_Bar"], bias_beta[, "SEM_Bar"]))
 
 #-------------------------------------------------------------------------------
 # SEM Based (Two-stage)
@@ -348,19 +347,14 @@ RMSE[1, "SAM"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "SAM"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "SAM"] <- diag(psych::factor.congruence(res_loading, P_loadings))
+congruence[1:ncol(P_loadings), "SAM"] <- diag(abs(psych::factor.congruence(res_loading, P_loadings)))
+PL_rate[1, "SAM"] <- PL(P_loadings, res_loading)
 
 #### Regression coefficient
-#bias_beta0[1, "SAM"] <- abs(reg_coef[1] - beta0)
-bias_beta1[1, "SAM"] <- abs(reg_coef[1] - beta1)
-bias_beta2[1, "SAM"] <- abs(reg_coef[2] - beta2)
-bias_betaALL[1, "SAM"] <- abs(
-  sum(
-    bias_beta0[1, "SAM"],
-    bias_beta1[1, "SAM"],
-    bias_beta2[1, "SAM"]
-  )
-)
+bias_beta0[1, "SAM"] <- abs(reg_coef[1]-beta0)
+bias_beta[, "SAM"] <- abs(reg_coef[-1]-beta)
+bias_betaALL[1, "SAM"] <- mean(c(bias_beta0[1, "SAM"], bias_beta[, "SAM"]))
+
 
 #-------------------------------------------------------------------------------
 
@@ -406,7 +400,12 @@ blocks <- list(
   bl9  = g_train,
   bl10 = y_train
 )
-connection <- diag(10)[, 10:1]
+
+connection <- matrix(0, 10, 10)
+connection[1:9, 10] <- 1
+connection[10, 1:9] <- 1
+diag(connection) <- 0
+
 sparsity <- rep(1,10)
 ### Run SGCCA
 fit_sgcca <- RGCCA::rgcca(blocks = blocks,
@@ -488,19 +487,14 @@ RMSE[1, "SGCCA"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "SGCCA"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "SGCCA"] <- diag(psych::factor.congruence(weight_SGCCA, P_loadings))
+congruence[1:ncol(P_loadings), "SGCCA"] <- diag(abs(psych::factor.congruence(W, P_loadings)))
+PL_rate[1, "SGCCA"] <- PL(P_loadings, W)
 
 #### Regression coefficient
-bias_beta0[1, "SGCCA"] <- abs(reg_coef[1] - beta0)
-bias_beta1[1, "SGCCA"] <- abs(reg_coef[2] - beta1)
-bias_beta2[1, "SGCCA"] <- abs(reg_coef[3] - beta2)
-bias_betaALL[1, "SGCCA"] <- abs(
-  sum(
-    bias_beta0[1, "SGCCA"],
-    bias_beta1[1, "SGCCA"],
-    bias_beta2[1, "SGCCA"]
-  )
-)
+bias_beta0[1, "SGCCA"] <- abs(reg_coef[1]-beta0)
+bias_beta[, "SGCCA"] <- abs(reg_coef[-1]-beta)
+bias_betaALL[1, "SGCCA"] <- mean(c(bias_beta0[1, "SGCCA"], bias_beta[, "SGCCA"]))
+
 
 #-------------------------------------------------------------------------------
 
@@ -545,19 +539,14 @@ RMSE[1, "rESEM"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "rESEM"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "rESEM"] <- diag(psych::factor.congruence(res_loading, P_loadings))
+congruence[1:ncol(P_loadings), "rESEM"] <- diag(abs(psych::factor.congruence(res_loading, P_loadings)))
+PL_rate[1, "rESEM"] <- PL(P_loadings, res_loading)
 
 #### Regression coefficient
-bias_beta0[1, "rESEM"] <- abs(reg_coef[1] - beta0)
-bias_beta1[1, "rESEM"] <- abs(reg_coef[2] - beta1)
-bias_beta2[1, "rESEM"] <- abs(reg_coef[3] - beta2)
-bias_betaALL[1, "rESEM"] <- abs(
-  sum(
-    bias_beta0[1, "rESEM"],
-    bias_beta1[1, "rESEM"],
-    bias_beta2[1, "rESEM"]
-  )
-)
+bias_beta0[1, "rESEM"] <- abs(reg_coef[1]-beta0)
+bias_beta[, "rESEM"] <- abs(reg_coef[-1]-beta)
+bias_betaALL[1, "rESEM"] <- mean(c(bias_beta0[1, "rESEM"], bias_beta[, "rESEM"]))
+
 
 #-------------------------------------------------------------------------------
 # SEM Based (One-stage)
@@ -594,8 +583,10 @@ SEMRule_Model <- '
 ## Step 2. Estimation of CB-SEM
 fit <- lavaan::sem(SEMRule_Model , data = df_train , meanstructure = TRUE)
 reg_coef <- c(lavaan::coef(fit)["y~1"], lavaan::coef(fit)[paste0("y~l",c(1:9))]) # regression coefficient
+res_loading <- lavaan::inspect(fit, "est")$lambda
+res_loading <- res_loading[1:36,1:9]
 ## Step 3. Calculate the predicted variable
-Y_hat <- lavaan::lavPredictY(fit, newdata = df_test, xnames = c(paste("x", c(1:36), sep = ""), "y"))
+Y_hat <- lavaan::lavPredictY(fit, newdata = df_test, ynames = "y", xnames = c(paste("x", c(1:36), sep = "")))
 ### Step 4. Criteria
 #### Prediction
 MAE[1, "SEM_BASED"] <- sum(abs(Y_test - Y_hat)) / (sample_size / 2)
@@ -603,19 +594,14 @@ RMSE[1, "SEM_BASED"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "SEM_BASED"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "SEM_BASED"] <- diag(psych::factor.congruence(weight_Emp, P_loadings))
+congruence[1:ncol(P_loadings), "SEM_BASED"] <- diag(abs(psych::factor.congruence(res_loading, P_loadings)))
+PL_rate[1, "SEM_BASED"] <- PL(P_loadings, res_loading)
 
 #### Regression coefficient
-bias_beta0[1, "SEM_BASED"] <- abs(reg_coef[1] - beta0)
-bias_beta1[1, "SEM_BASED"] <- abs(reg_coef[2] - beta1)
-bias_beta2[1, "SEM_BASED"] <- abs(reg_coef[3] - beta2)
-bias_betaALL[1, "SEM_BASED"] <- abs(
-  sum(
-    bias_beta0[1, "SEM_BASED"],
-    bias_beta1[1, "SEM_BASED"],
-    bias_beta2[1, "SEM_BASED"]
-  )
-)
+bias_beta0[1, "SEM_BASED"] <- abs(reg_coef[1]-beta0)
+bias_beta[, "SEM_BASED"] <- abs(reg_coef[-1]-beta)
+bias_betaALL[1, "SEM_BASED"] <- mean(c(bias_beta0[1, "SEM_BASED"], bias_beta[, "SEM_BASED"]))
+
 
 #-------------------------------------------------------------------------------
 
@@ -675,10 +661,13 @@ mmMatrix <- matrix(c("X","x1","R",
 NameVariables <- mmMatrix[,"measurement"]
 colnames(df_train) <- NameVariables
 colnames(df_test) <- NameVariables
-
-predTrain <- PLSpredict(df_train, df_test, smMatrix, mmMatrix, 300,9)
+predTrain <- PLSpredict(df_train, df_test, smMatrix, mmMatrix, maxIt = 300, stopCriterion = 9)
 Y_hat <- predTrain$predictedMeasurements
-
+# get loadings and regression coefficients
+PLS_sim <- simplePLS(df_train, smMatrix, mmMatrix, maxIt = 300, stopCriterion = 9)
+PLS_loadings <- PLS_sim$outer_loadings[-37,-10]
+# get not standardized regression coefficient
+reg_coef <- get_intercepts(PLS_sim)
 ## Step 3. Criteria
 ### Prediction
 MAE[1, "PLS"] <- sum(abs(Y_test - Y_hat)) / (sample_size / 2)
@@ -686,32 +675,28 @@ RMSE[1, "PLS"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "PLS"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "PLS"] <- diag(psych::factor.congruence(PLS_loadings[1:nrow(P_loadings), c("X","Z")], P_loadings))
+congruence[1:ncol(P_loadings), "PLS"] <- diag(psych::factor.congruence(PLS_loadings[1:nrow(P_loadings), 1:9], P_loadings))
+PL_rate[1, "PLS"] <- PL(P_loadings, PLS_loadings)
 
-#### Regression coefficient
-bias_beta0[1, "PLS"] <- abs(reg_coef["Y"] - beta0)
-bias_beta1[1, "PLS"] <- abs(reg_coef["X"] - beta1)
-bias_beta2[1, "PLS"] <- abs(reg_coef["Z"] - beta2)
-bias_betaALL[1, "PLS"] <- abs(
-  sum(
-    bias_beta0[1, "PLS"],
-    bias_beta1[1, "PLS"],
-    bias_beta2[1, "PLS"]
-  )
-)
+### Regression coefficient
+bias_beta0[1, "PLS"] <- abs(reg_coef[1]-beta0)
+bias_beta[, "PLS"] <- abs(reg_coef[-1]-beta)
+bias_betaALL[1, "PLS"] <- mean(c(bias_beta0[1, "PLS"], bias_beta[, "PLS"]))
+ 
 
 #-------------------------------------------------------------------------------
 # Machine learning approaches
 #-------------------------------------------------------------------------------
 
 #8. Linear regression
-## Step 1. Estimate linear model based on test data
+## Step 1. Estimate linear model based on training data
 Lmodel <- lm(y ~., data = df_train)
 ### Get the regression coefficients
 reg_coef <- Lmodel$coefficients
 ## Step 2. Calculate the predicted variable
 X_test_int <- cbind(1, as.matrix(X_test))
 Y_hat <- X_test_int %*% reg_coef
+# Y_hat <- predict(Lmodel, newdata = df_test)
 
 ## Step 3. Criteria
 ### Prediction
@@ -757,5 +742,5 @@ RMSE[1, "elastic"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "elastic"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
 
 #### Measurement model part
-congruence[1:ncol(P_loadings), "elastic"] <- diag(psych::factor.congruence(weight_Emp, P_loadings))
+# congruence[1:ncol(P_loadings), "elastic"] <- diag(psych::factor.congruence(weight_Emp, P_loadings))
 
