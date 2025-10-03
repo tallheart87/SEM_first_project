@@ -20,12 +20,13 @@ check_direction <- function(check_load, train_score, true_load, factor_n){
   for (p in 1:nrow(perm)) {
     corsign <- sign(diag(cor(true_load, check_load[, perm[p,]])))
     L_res <- (check_load[, perm[p,]]) %*% diag(corsign)
-    absdiff[p] <- sum(rowSums(abs(true_load - L_res)))
+    absdiff[p] <- sum(rowSums(abs(true_load - L_res), na.rm = TRUE))
   }
   bestperm <- which.min(absdiff)
   loadings <- check_load[, perm[bestperm,]]
   corsign <- sign(diag(cor(true_load, loadings)))
   changed_loadings <- loadings %*% diag(corsign)
+  changed_loadings[,is.na(colSums(changed_loadings))] <- 0
   
   if(sum(is.na(train_score)) == 1){
     train_score_T <- NA

@@ -18,7 +18,7 @@ source("function/factor9/7.3_get_intercepts.R")
 
 # sample size
 SS <- c(200,400,1000,2000)
-sample_size <- SS[4]
+sample_size <- SS[1]
 
 # measurement model
 ## strong condition
@@ -41,7 +41,7 @@ beta0 <- 0
 ## strong condition
 beta <- runif(9, min = 0.25, max = 0.4)
 ## weak condition
-# beta <- runif(9, min = 0.15, max = 0.25)
+#beta <- runif(9, min = 0.15, max = 0.25)
 
 # data generate
 Uniq <- diag(1 - rowSums(P_loadings ^ 2))
@@ -62,8 +62,6 @@ Y <- rep(beta0, sample_size) + beta[1] * Score[1, ] +
                                beta[7] * Score[7, ] + 
                                beta[8] * Score[8, ] + 
                                beta[9] * Score[9, ] + rnorm(n = sample_size, mean = 0, sd = 0.01)
-
-
 # The dataset
 data <- cbind(X,Y)
 colnames(data) <- c(
@@ -370,8 +368,8 @@ bias_betaALL[1, "SAM"] <- mean(c(bias_beta0[1, "SAM"], bias_beta[, "SAM"]))
 
 #4. Sparse generalized canonical correlation analysis (SGCCA)
 ## Step 0. Transform data
-df_train <- cbind(X_train, Y_train) |> setNames(c(paste0("x", 1:36), "y"))
-df_test <- cbind(X_test, Y_test) |> setNames(c(paste0("x", 1:36), "y"))
+colnames(df_train) <- c(paste0("x", 1:36), "y")
+colnames(df_test) <- c(paste0("x", 1:36), "y")
 
 x_train <- df_train[, 1:4]
 z_train<- df_train[, 5:8]
@@ -563,6 +561,8 @@ bias_betaALL[1, "rESEM"] <- mean(c(bias_beta0[1, "rESEM"], bias_beta[, "rESEM"])
 #-------------------------------------------------------------------------------
 
 #6. SEM-Based Prediction Rule
+colnames(df_train) <- c(paste0("x", 1:36), "y")
+colnames(df_test) <- c(paste0("x", 1:36), "y")
 ## Step 1. Build the model
 SEMRule_Model <- '
   # Measurement model
@@ -616,6 +616,8 @@ bias_betaALL[1, "SEM_BASED"] <- mean(c(bias_beta0[1, "SEM_BASED"], bias_beta[, "
 #-------------------------------------------------------------------------------
 
 #7. PLS-SEM
+colnames(df_train) <- c(paste0("x", 1:36), "y")
+colnames(df_test) <- c(paste0("x", 1:36), "y")
 ## Step 1. Create matrix of the measurement and structural Model
 smMatrix <- matrix(c("X","Y",
                      "Z","Y",
@@ -699,6 +701,8 @@ bias_betaALL[1, "PLS"] <- mean(c(bias_beta0[1, "PLS"], bias_beta[, "PLS"]))
 #-------------------------------------------------------------------------------
 
 #8. Linear regression
+colnames(df_train) <- c(paste0("x", 1:36), "y")
+colnames(df_test) <- c(paste0("x", 1:36), "y")
 ## Step 1. Estimate linear model based on training data
 Lmodel <- lm(y ~., data = df_train)
 ### Get the regression coefficients
@@ -713,9 +717,6 @@ Y_hat <- X_test_int %*% reg_coef
 MAE[1, "GLM"] <- sum(abs(Y_test - Y_hat)) / (sample_size / 2)
 RMSE[1, "GLM"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "GLM"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
-
-#### Measurement model part
-# congruence[1:ncol(P_loadings), "GLM"] <- diag(psych::factor.congruence(weight_Emp, P_loadings))
 
 #-------------------------------------------------------------------------------
 
@@ -750,7 +751,3 @@ Y_hat <- predict(final_model, newx = X_test, s = best_lambda)
 MAE[1, "elastic"] <- sum(abs(Y_test - Y_hat)) / (sample_size / 2)
 RMSE[1, "elastic"] <- sqrt(sum((Y_test - Y_hat)^2) / (sample_size / 2))
 OFS[1, "elastic"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
-
-#### Measurement model part
-# congruence[1:ncol(P_loadings), "elastic"] <- diag(psych::factor.congruence(weight_Emp, P_loadings))
-
