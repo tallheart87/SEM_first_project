@@ -99,7 +99,18 @@ result <- foreach(i = 1:rep) %dopar% {
         lambdax <- c(matrix(unlist(lambda), ncol = 1))
         lambday <- 1
         ## Covariance of exogenous composites (eta1, eta2)
-        Sxixi <- cov_matrix
+        vcov.theta = matrix(c(
+          1.000, 0.467, 0.425, 0.153, 0.465, 0.455, 0.445, 0.283, 0.101,
+          0.467, 1.000, 0.471, 0.356, 0.493, 0.492, 0.513, 0.355, 0.256,
+          0.425, 0.471, 1.000, 0.109, 0.652, 0.418, 0.142, 0.531, 0.327,
+          0.153, 0.356, 0.109, 1.000, 0.324, 0.416, 0.564, 0.022, 0.063,
+          0.465, 0.493, 0.652, 0.324, 1.000, 0.811, 0.430, 0.104, 0.114,
+          0.455, 0.492, 0.418, 0.416, 0.811, 1.000, 0.685, -0.145, -0.070,
+          0.445, 0.513, 0.142, 0.564, 0.430, 0.685, 1.000, -0.070, 0.060,
+          0.283, 0.355, 0.531, 0.022, 0.104, -0.145, -0.070, 1.000, 0.664,
+          0.101, 0.256, 0.327, 0.063, 0.114, -0.070, 0.060, 0.664, 1.000
+        ), 9, 9)
+        Sxixi <- vcov.theta
         ## covariance matrix of a GSC model
         out <- cbsem::gscmcov(
           B = B,
@@ -137,7 +148,7 @@ result <- foreach(i = 1:rep) %dopar% {
         
         methods <- c("SumScore", 
                      "SEM_Reg", "SEM_Bar",
-                     "SAM",
+                     "SAM","SAM_Reg",
                      "SGCCA","rESEM", 
                      "SEM_BASED", "PLS", 
                      "GLM", "elastic")
@@ -318,17 +329,6 @@ result <- foreach(i = 1:rep) %dopar% {
 
   # Structural model
   Fy ~ Fa + Fb + Fc + Fd + Fe + Ff + Fg + Fh + Fi
-
-  # Fix latent variances to 1
-  Fa ~~ 1*Fa
-  Fb ~~ 1*Fb
-  Fc ~~ 1*Fc
-  Fd ~~ 1*Fd
-  Fe ~~ 1*Fe
-  Ff ~~ 1*Ff
-  Fg ~~ 1*Fg
-  Fh ~~ 1*Fh
-  Fi ~~ 1*Fi
 '
         
         ### Compute loadings and residual variances for each measurement block separately
@@ -360,7 +360,7 @@ result <- foreach(i = 1:rep) %dopar% {
           bias_beta[, "SEM_Reg"] <- NA
           bias_betaALL[1, "SEM_Reg"] <- NA
         }else{
-          ### Obtain estimated variance–covariance matrix
+          ### Obtain sample estimated variance–covariance matrix
           covariance_matrix <- cov(df_trainSAM) * (train_n - 1) / train_n
           ### Compute summary statistics E(eta) and var(eta)
           summ.stats <- LSAM_SumStats(S = covariance_matrix,
@@ -376,17 +376,34 @@ result <- foreach(i = 1:rep) %dopar% {
           ## Step 3. Get the factor score (Bartlett method) of test data
           test_score <- t(solve(res_residual) %*% res_loading %*% solve(t(res_loading) %*% solve(res_residual) %*% res_loading)) %*% t(X_test)
           test_score <- t(test_score)
+          ## regression method factor score
+          test_scoreReg <- summ.stats[1:9,1:9] %*% t(res_loading) %*% solve((res_loading %*% summ.stats[1:9,1:9] %*% t(res_loading) + res_residual)) %*% t(X_test)
+          test_scoreReg <- t(test_scoreReg)
           
           ### get intercept
-          MeanY <- mean(Y_train)
-          MeanX <- apply(test_score, 2, mean)
+          #### Bartlett 
+          train_score <- t(solve(res_residual) %*% res_loading %*% solve(t(res_loading) %*% solve(res_residual) %*% res_loading)) %*% t(X_train)
+          train_score <- t(train_score)
+          MeanY <- 0 # Y loading = 1 and residual is 0
+          MeanX <- apply(train_score, 2, mean)
           intercept <- MeanY - sum(reg_coef*MeanX)
-          reg_coef <- c(intercept, reg_coef)
+          reg_coefBar <- c(intercept, reg_coef)
+          #### Regression
+          train_scoreReg <- summ.stats[1:9,1:9] %*% t(res_loading) %*% solve((res_loading %*% summ.stats[1:9,1:9] %*% t(res_loading) + res_residual)) %*% t(X_train)
+          train_scoreReg <- t(train_scoreReg)
+          MeanY <- 0 # Y loading = 1 and residual is 0
+          MeanXReg <- apply(train_scoreReg, 2, mean)
+          interceptReg <- MeanY - sum(reg_coef*MeanXReg)
+          reg_coefReg <- c(interceptReg, reg_coef)
           
           ### Step 4. Calculate the predicted variable
-          Y_hat <- reg_coef[1] + test_score %*% matrix(reg_coef[-1], factor_N, 1)
+          Y_hat <- reg_coefBar[1] + test_score %*% matrix(reg_coefBar[-1], factor_N, 1)
+          #### Regression
+          Y_hatReg <- reg_coefReg[1] + test_score %*% matrix(reg_coefReg[-1], factor_N, 1)
+          
           
           ### Step 5. Criteria
+          #### Bartlett
           #### Prediction
           MAE[1, "SAM"] <- sum(abs(Y_test - Y_hat)) / test_n
           RMSE[1, "SAM"] <- sqrt(sum((Y_test - Y_hat)^2) / test_n)
@@ -397,9 +414,24 @@ result <- foreach(i = 1:rep) %dopar% {
           PL_rate[1, "SAM"] <- PL(P_loadings, res_loading)
           
           #### Regression coefficient
-          bias_beta0[1, "SAM"] <- abs(reg_coef[1]-beta0)
-          bias_beta[, "SAM"] <- abs(reg_coef[-1]-beta)
+          bias_beta0[1, "SAM"] <- abs(reg_coefBar[1]-beta0)
+          bias_beta[, "SAM"] <- abs(reg_coefBar[-1]-beta)
           bias_betaALL[1, "SAM"] <- mean(c(bias_beta0[1, "SAM"], bias_beta[, "SAM"]))
+          
+          #### Regression
+          #### Prediction
+          MAE[1, "SAM_Reg"] <- sum(abs(Y_test - Y_hatReg)) / test_n
+          RMSE[1, "SAM_Reg"] <- sqrt(sum((Y_test - Y_hatReg)^2) / test_n)
+          OFS[1, "SAM_Reg"] <- sum((Y_test - Y_hatReg)^2) / sum(Y_test^2)
+          
+          #### Measurement model part
+          congruence[1:ncol(P_loadings), "SAM_Reg"] <- diag(abs(psych::factor.congruence(res_loading, P_loadings)))
+          PL_rate[1, "SAM_Reg"] <- PL(P_loadings, res_loading)
+          
+          #### Regression coefficient
+          bias_beta0[1, "SAM_Reg"] <- abs(reg_coefReg[1]-beta0)
+          bias_beta[, "SAM_Reg"] <- abs(reg_coefReg[-1]-beta)
+          bias_betaALL[1, "SAM_Reg"] <- mean(c(bias_beta0[1, "SAM"], bias_beta[, "SAM"]))
           
         }
         
@@ -767,7 +799,7 @@ result <- foreach(i = 1:rep) %dopar% {
       }
     }
   }
-  saveRDS(criteria, paste0("Replication_", i, format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
+  saveRDS(criteria, paste0("criteria_", format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
 }
 end_time <- Sys.time()
 time <- (end_time - start); time
