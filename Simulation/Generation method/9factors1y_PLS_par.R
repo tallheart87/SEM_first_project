@@ -38,12 +38,33 @@ item_total <- factor_N * item_N
 ## y factor
 Y_n <- 1
 XY_n <- factor_N + Y_n
+# variance covariance matrix of latent variables from CERQ study
+vcov.theta = matrix(c(
+  1.000, 0.467, 0.425, 0.153, 0.465, 0.455, 0.445, 0.283, 0.101,
+  0.467, 1.000, 0.471, 0.356, 0.493, 0.492, 0.513, 0.355, 0.256,
+  0.425, 0.471, 1.000, 0.109, 0.652, 0.418, 0.142, 0.531, 0.327,
+  0.153, 0.356, 0.109, 1.000, 0.324, 0.416, 0.564, 0.022, 0.063,
+  0.465, 0.493, 0.652, 0.324, 1.000, 0.811, 0.430, 0.104, 0.114,
+  0.455, 0.492, 0.418, 0.416, 0.811, 1.000, 0.685, -0.145, -0.070,
+  0.445, 0.513, 0.142, 0.564, 0.430, 0.685, 1.000, -0.070, 0.060,
+  0.283, 0.355, 0.531, 0.022, 0.104, -0.145, -0.070, 1.000, 0.664,
+  0.101, 0.256, 0.327, 0.063, 0.114, -0.070, 0.060, 0.664, 1.000
+), 9, 9)
+signbetas = sign(matrix(c( 2.712,
+                           -0.136,
+                           0.048,
+                           0.513,
+                           0.525,
+                           -2.671,
+                           0.042,
+                           5.324,
+                           -0.461), 9, 1))
 
 # do Parallel
 cl <- makeCluster(max(1, parallel::detectCores() - 1))
 registerDoParallel(cl)
 # replications
-rep <- 40
+rep <- 20
 # conditions
 measurement = c("M:weak", "M:strong")
 structural = c("S:weak", "S:strong")
@@ -73,20 +94,28 @@ result <- foreach(i = 1:rep) %dopar% {
         
         # loadings and betas
         if (meas == "M:weak"){
-          P_loadings <- readRDS("loadingsW_0922.rds")
-          lambda <- readRDS("lambda1W_0922.rds")
+          lambda = runif(item_total, min = 0.2, max = 0.5)
         }else{
-          P_loadings <- readRDS("loadings_0922.rds")
-          lambda <- readRDS("lambda1_0922.rds")
+          lambda = runif(item_total, min = 0.5, max = 0.8)
         }
+        # get different format loadings (with 0)
+        lambda1 <- matrix(lambda, nrow = item_N, ncol = factor_N)
+        eta <- lambda1
+        p <- nrow(eta)
+        k <- ncol(eta)
+        P_loadings <- sapply(1:k, function(j) {
+          c(rep(0, (j-1)*p), eta[, j], rep(0, (k-j)*p))
+        })
+        P_loadings <- matrix(P_loadings, nrow = p*k, ncol = k,
+                             dimnames = list(paste0("row", 1:(p*k)), colnames(eta)))
+        
         if (struc == "S:weak"){
-          beta <- readRDS("betaW_0922.rds")
+          beta = signbetas * matrix(runif(factor_N, min = 0.15, max = 0.25), factor_N, 1)
         }else{
-          beta <- readRDS("beta_0922.rds")
+          beta = signbetas * matrix(runif(factor_N, min = 0.25, max = 0.40), factor_N, 1)
         }
         beta0 <- 0
         allCoef <- rbind(P_loadings, matrix(beta,1,9))
-        cov_matrix <- readRDS("covarianceSS.rds")
         
         # data generation for PLS-SEM based model
         ## Structural model among 10 composites
@@ -98,18 +127,7 @@ result <- foreach(i = 1:rep) %dopar% {
         ## Reflective loadings
         lambdax <- c(matrix(unlist(lambda), ncol = 1))
         lambday <- 1
-        ## Covariance of exogenous composites (eta1, eta2)
-        vcov.theta = matrix(c(
-          1.000, 0.467, 0.425, 0.153, 0.465, 0.455, 0.445, 0.283, 0.101,
-          0.467, 1.000, 0.471, 0.356, 0.493, 0.492, 0.513, 0.355, 0.256,
-          0.425, 0.471, 1.000, 0.109, 0.652, 0.418, 0.142, 0.531, 0.327,
-          0.153, 0.356, 0.109, 1.000, 0.324, 0.416, 0.564, 0.022, 0.063,
-          0.465, 0.493, 0.652, 0.324, 1.000, 0.811, 0.430, 0.104, 0.114,
-          0.455, 0.492, 0.418, 0.416, 0.811, 1.000, 0.685, -0.145, -0.070,
-          0.445, 0.513, 0.142, 0.564, 0.430, 0.685, 1.000, -0.070, 0.060,
-          0.283, 0.355, 0.531, 0.022, 0.104, -0.145, -0.070, 1.000, 0.664,
-          0.101, 0.256, 0.327, 0.063, 0.114, -0.070, 0.060, 0.664, 1.000
-        ), 9, 9)
+        ## Covariance of exogenous composites (eta1~eta9)
         Sxixi <- vcov.theta
         ## covariance matrix of a GSC model
         out <- cbsem::gscmcov(
@@ -347,18 +365,32 @@ result <- foreach(i = 1:rep) %dopar% {
         if (all(colSums(res_residual != 0) > 0) == F){
           ## Last step. Criteria
           ### prediction
-          MAE[1, "SEM_Reg"] <- NA
-          RMSE[1, "SEM_Reg"] <- NA
-          OFS[1, "SEM_Reg"] <- NA
+          MAE[1, "SAM"] <- NA
+          RMSE[1, "SAM"] <- NA
+          OFS[1, "SAM"] <- NA
           
           ### Measurement model part
-          congruence[1:ncol(P_loadings), "SEM_Reg"] <- NA
-          PL_rate[1, "SEM_Reg"] <- NA
+          congruence[1:ncol(P_loadings), "SAM"] <- NA
+          PL_rate[1, "SAM"] <- NA
           
           ### Regression coefficient
-          bias_beta0[1, "SEM_Reg"] <- NA
-          bias_beta[, "SEM_Reg"] <- NA
-          bias_betaALL[1, "SEM_Reg"] <- NA
+          bias_beta0[1, "SAM"] <- NA
+          bias_beta[, "SAM"] <- NA
+          bias_betaALL[1, "SAM"] <- NA
+          
+          ### prediction
+          MAE[1, "SAM_Reg"] <- NA
+          RMSE[1, "SAM_Reg"] <- NA
+          OFS[1, "SAM_Reg"] <- NA
+          
+          ### Measurement model part
+          congruence[1:ncol(P_loadings), "SAM_Reg"] <- NA
+          PL_rate[1, "SAM_Reg"] <- NA
+          
+          ### Regression coefficient
+          bias_beta0[1, "SAM_Reg"] <- NA
+          bias_beta[, "SAM_Reg"] <- NA
+          bias_betaALL[1, "SAM_Reg"] <- NA
         }else{
           ### Obtain sample estimated variance–covariance matrix
           covariance_matrix <- cov(df_trainSAM) * (train_n - 1) / train_n
@@ -781,8 +813,6 @@ result <- foreach(i = 1:rep) %dopar% {
         MAE[1, "elastic"] <- sum(abs(Y_test - Y_hat)) / test_n
         RMSE[1, "elastic"] <- sqrt(sum((Y_test - Y_hat)^2) / test_n)
         OFS[1, "elastic"] <- sum((Y_test - Y_hat)^2) / sum(Y_test^2)
-        
-        
         
         #-------------------------------------------------------------------------------
         # The end
