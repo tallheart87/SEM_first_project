@@ -361,36 +361,7 @@ result <- foreach(i = 1:rep) %dopar% {
         )$loadings
         #### residuals
         res_residual <- mm_est$THETA[1:item_total,1:item_total]
-        if (all(colSums(res_residual != 0) > 0) == F){
-          ## Last step. Criteria
-          ### prediction
-          MAE[1, "SAM"] <- NA
-          RMSE[1, "SAM"] <- NA
-          OFS[1, "SAM"] <- NA
-          
-          ### Measurement model part
-          congruence[1:ncol(P_loadings), "SAM"] <- NA
-          PL_rate[1, "SAM"] <- NA
-          
-          ### Regression coefficient
-          bias_beta0[1, "SAM"] <- NA
-          bias_beta[, "SAM"] <- NA
-          bias_betaALL[1, "SAM"] <- NA
-          
-          ### prediction
-          MAE[1, "SAM_Reg"] <- NA
-          RMSE[1, "SAM_Reg"] <- NA
-          OFS[1, "SAM_Reg"] <- NA
-          
-          ### Measurement model part
-          congruence[1:ncol(P_loadings), "SAM_Reg"] <- NA
-          PL_rate[1, "SAM_Reg"] <- NA
-          
-          ### Regression coefficient
-          bias_beta0[1, "SAM_Reg"] <- NA
-          bias_beta[, "SAM_Reg"] <- NA
-          bias_betaALL[1, "SAM_Reg"] <- NA
-        }else{
+        
           ### Obtain sample estimated variance–covariance matrix
           covariance_matrix <- cov(df_trainSAM) * (train_n - 1) / train_n
           ### Compute summary statistics E(eta) and var(eta)
@@ -463,8 +434,6 @@ result <- foreach(i = 1:rep) %dopar% {
           bias_beta0[1, "SAM_Reg"] <- abs(reg_coefReg[1]-beta0)
           bias_beta[, "SAM_Reg"] <- abs(reg_coefReg[-1]-beta)
           bias_betaALL[1, "SAM_Reg"] <- mean(c(bias_beta0[1, "SAM"], bias_beta[, "SAM"]))
-          
-        }
         
         #-------------------------------------------------------------------------------
         #4. Sparse generalized canonical correlation analysis (SGCCA)
