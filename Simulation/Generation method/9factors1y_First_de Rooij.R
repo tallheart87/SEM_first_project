@@ -34,10 +34,10 @@ Y_n <- 1
 XY_n <- factor_N + Y_n
 
 # do Parallel
-cl <- makeCluster(max(1, parallel::detectCores() - 1))
+cl <- makeCluster(max(1, parallel::detectCores()/2))
 registerDoParallel(cl)
 # replications
-rep <- 40
+rep <- 30
 # conditions
 measurement <- c("M:weak", "M:strong")
 structural <- c("S:weak", "S:strong")
@@ -355,6 +355,8 @@ result <- foreach(i = 1:rep) %dopar% {
 
   # Structural model
   Fy ~ Fa + Fb + Fc + Fd + Fe + Ff + Fg + Fh + Fi
+  
+  Fa ~~ 0*Fb + 0*Fc + 0*Fd + 0*Fe + 0*Ff + 0*Fg + 0*Fh + 0*Fi
 '
         
         ### Compute loadings and residual variances for each measurement block separately
@@ -411,7 +413,7 @@ result <- foreach(i = 1:rep) %dopar% {
           
           ## Step 2. Estimate structural model (based on the variance-covariance matrix of the factor scores)
           reg_coef <- LSAM_regcoef(model = SAM_Model, 
-                                   sumstats = summ.stats) # unstandardized beta
+                                   sumstats = summ.stats) # standardized beta
           
           ## Step 3. Get the factor score (Bartlett method) of test data
           test_score <- t(solve(res_residual) %*% res_loading %*% solve(t(res_loading) %*% solve(res_residual) %*% res_loading)) %*% t(X_test)
@@ -836,9 +838,9 @@ result <- foreach(i = 1:rep) %dopar% {
       }
     }
   }
-  saveRDS(criteria, paste0("criteria_", format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
+  saveRDS(criteria, file = paste0("REP/REP4/criteria_", format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
   end <- Sys.time()
   time <- (end - start)
-  saveRDS(time, paste0("time", format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
+  saveRDS(time, file = paste0("REP/REP4/time_", format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
 }
 stopCluster(cl)

@@ -61,10 +61,10 @@ signbetas = sign(matrix(c( 2.712,
                            -0.461), 9, 1))
 
 # do Parallel
-cl <- makeCluster(max(1, parallel::detectCores() - 1))
+cl <- makeCluster(max(1, parallel::detectCores()/2))
 registerDoParallel(cl)
 # replications
-rep <- 20
+rep <- 30
 # conditions
 measurement = c("M:weak", "M:strong")
 structural = c("S:weak", "S:strong")
@@ -76,10 +76,9 @@ criteria <- lapply(measurement, function(m) {
     }) |> setNames(structural)
   }) |> setNames(measurement)
 
-start <- Sys.time()
 # start
 result <- foreach(i = 1:rep) %dopar% {
-  
+  start <- Sys.time()
   for(ss in 1:4){
     for(m in 1:2){
       for(s in 1:2){
@@ -829,12 +828,9 @@ result <- foreach(i = 1:rep) %dopar% {
       }
     }
   }
-  saveRDS(criteria, paste0("criteria_", format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
+  saveRDS(criteria, file = paste0("REP/REP5/criteria_", format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
+  end <- Sys.time()
+  time <- (end - start)
+  saveRDS(time, file = paste0("REP/REP5/time_", format(Sys.time(), "%m-%d-%H-%M-%S"), ".rds"))
 }
-end_time <- Sys.time()
-time <- (end_time - start); time
 stopCluster(cl)
-
-criteria <- readRDS("Replication_1110-03-12-22-23.rds")
-
-

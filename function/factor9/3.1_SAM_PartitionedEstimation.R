@@ -58,11 +58,23 @@ partitioned.estimation <- function(data = NULL, method = NULL) {
     model <- paste0("F", unique(grp)[i], " =~ ", 
                     paste0(ind.names.split[[i]], collapse = " + "))
     
-    fit <- lavaan::cfa(model = model, 
-                   data = as.data.frame(data.sub),
-                   estimator = cfa.estimator,
-                   bounds = "standard",
-                   estimator.args = est.args)
+    if (i != 10){
+      fit <- lavaan::cfa(model = model, 
+                         data = as.data.frame(data.sub),
+                         estimator = cfa.estimator,
+                         bounds = "standard",
+                         estimator.args = est.args, 
+                         std.lv = TRUE)
+    } else {
+      fit <- lavaan::cfa(model = model, 
+                         data = as.data.frame(data.sub),
+                         estimator = cfa.estimator,
+                         bounds = "standard",
+                         estimator.args = est.args, 
+                         std.lv = FALSE)
+    }
+    
+    
     
     if(!inherits(fit, "try-error")){
       

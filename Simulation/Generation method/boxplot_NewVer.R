@@ -1,11 +1,11 @@
 # read all replication results
-path <- "REP/REP3"
+path <- "REP/REP5"
 files <- list.files(path, pattern = "\\.rds$", full.names = TRUE)
 criteria_list <- lapply(files, readRDS)
 names(criteria_list) <- paste0("rep", c(1:length(files)))
 
 # simulation time
-path2 <- "REP/REP3/time"
+path2 <- "REP/REP5/time"
 files2 <- list.files(path2, pattern = "\\.rds$", full.names = TRUE)
 criteria_list2 <- lapply(files2, readRDS)
 
@@ -60,7 +60,7 @@ p <- ggplot(df_mae, aes(x = method, y = MAE, fill = method)) +
   facet_grid(condition ~ n, scales = "free_y") +         # one panel per condition × n
   labs(title = paste0("MAE across " , length(files), " replications"),
        x = "Method", y = "MAE") +
-  scale_y_continuous(limits = c(0, 2)) + #scale the y-axis
+  scale_y_continuous(limits = c(0, 4)) + #scale the y-axis
   theme_bw() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 45, hjust = 1))
@@ -78,7 +78,7 @@ p_noSAM <- ggplot(df_mae_noSAM, aes(x = method, y = MAE, fill = method)) +
   facet_grid(condition ~ n, scales = "free_y") +         # one panel per condition × n
   labs(title = paste0("MAE across" , length(files), "replications"),
        x = "Method", y = "MAE") +
-  #scale_y_continuous(limits = c(0, 1)) + #scale the y-axis
+  scale_y_continuous(limits = c(0, 1)) + #scale the y-axis
   theme_bw() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 45, hjust = 1))
