@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Hsin">
+
+<title>Simulation Draft</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="simulation_draft_files/libs/clipboard/clipboard.min.js"></script>
+<script src="simulation_draft_files/libs/quarto-html/quarto.js"></script>
+<script src="simulation_draft_files/libs/quarto-html/popper.min.js"></script>
+<script src="simulation_draft_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="simulation_draft_files/libs/quarto-html/anchor.min.js"></script>
+<link href="simulation_draft_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="simulation_draft_files/libs/quarto-html/quarto-syntax-highlighting-07ba0ad10f5680c660e360ac31d2f3b6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="simulation_draft_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="simulation_draft_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="simulation_draft_files/libs/bootstrap/bootstrap-b8d30c7eeda119d43de224048e70de8f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#simulation-settings" id="toc-simulation-settings" class="nav-link active" data-scroll-target="#simulation-settings">Simulation Settings</a>
+  <ul class="collapse">
+  <li><a href="#design-factors" id="toc-design-factors" class="nav-link" data-scroll-target="#design-factors">Design Factors</a></li>
+  <li><a href="#data-generation" id="toc-data-generation" class="nav-link" data-scroll-target="#data-generation">Data generation</a></li>
+  <li><a href="#factor-based-data-generation" id="toc-factor-based-data-generation" class="nav-link" data-scroll-target="#factor-based-data-generation">Factor-based data generation</a></li>
+  <li><a href="#composite-based-data-generation" id="toc-composite-based-data-generation" class="nav-link" data-scroll-target="#composite-based-data-generation">Composite-based data generation</a></li>
+  </ul></li>
+  <li><a href="#result" id="toc-result" class="nav-link" data-scroll-target="#result">Result</a>
+  <ul class="collapse">
+  <li><a href="#all-conditions-m-weak-strong-s-weak-strong" id="toc-all-conditions-m-weak-strong-s-weak-strong" class="nav-link" data-scroll-target="#all-conditions-m-weak-strong-s-weak-strong">All conditions (M: weak, strong; S: weak, strong)</a></li>
+  <li><a href="#measurement-strong-condition-without-sam" id="toc-measurement-strong-condition-without-sam" class="nav-link" data-scroll-target="#measurement-strong-condition-without-sam">Measurement strong condition (without SAM)</a></li>
+  <li><a href="#measurement-weak-condition-without-sam" id="toc-measurement-weak-condition-without-sam" class="nav-link" data-scroll-target="#measurement-weak-condition-without-sam">Measurement weak condition (without SAM)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Simulation Draft</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Hsin </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="simulation-settings" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-settings">Simulation Settings</h2>
+<p>The model settings for this simulation study are based on <span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span>. In the structural model, nine latent variables (<span class="math inline">\eta_x</span>) predict one outcome indicator (<span class="math inline">y</span>). Each latent variable is measured by four observed indicator items, resulting in a total of 37 observed (simulated) variables (see Figure 1).</p>
+<p><img src="model%20settings.png" class="img-fluid" width="300"></p>
+<p>Figure 1. Fully reflective SEM for the simulation study</p>
+<section id="design-factors" class="level3">
+<h3 class="anchored" data-anchor-id="design-factors">Design Factors</h3>
+<p>The simulation design includes three key factors:</p>
+<ol type="1">
+<li><p>Sample size of the training set</p></li>
+<li><p>Strength of the relationships in the measurement model</p></li>
+<li><p>Strength of the relationships in the structural model</p></li>
+</ol>
+<section id="sample-sizes" class="level4">
+<h4 class="anchored" data-anchor-id="sample-sizes">Sample sizes</h4>
+<p>The training sample size factor includes four levels: 100, 200, 500, and 1,000, representing a broad range of conditions. The test set size is fixed at 1,000 observations across all conditions.</p>
+</section>
+<section id="measurement-model" class="level4">
+<h4 class="anchored" data-anchor-id="measurement-model">Measurement model</h4>
+<p>The strength of the relationships between the nine latent variables and their respective indicators has two levels: weak and strong. In the weak condition, factor loadings are drawn from a uniform distribution between 0.20 and 0.50. In the strong condition, factor loadings are also drawn from a uniform distribution between 0.50 and 0.80. Item means are generated from a uniform distribution ranging from 1.50 to 3.00.</p>
+</section>
+<section id="structural-model" class="level4">
+<h4 class="anchored" data-anchor-id="structural-model">Structural model</h4>
+<p>The relationships between the latent variables and the predicted indicator also vary in strength across two levels: weak and strong. For the weak condition, regression coefficients are drawn from a uniform distribution between 0.15 and 0.25. For the strong condition, coefficients are drawn from a uniform distribution between 0.25 and 0.40. The signs of the regression coefficients match those used in the empirical example reported by de Rooij (2023).</p>
+</section>
+</section>
+<section id="data-generation" class="level3">
+<h3 class="anchored" data-anchor-id="data-generation">Data generation</h3>
+<p>Data generation was carried out in two ways: factor-based and composite-based. In both methods, the generated data were divided into a training set and a test set at the final step of the procedure.</p>
+</section>
+<section id="factor-based-data-generation" class="level3">
+<h3 class="anchored" data-anchor-id="factor-based-data-generation">Factor-based data generation</h3>
+<p>The factor-based data generation procedure follows the approach described in <span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span>. Factor scores were first generated from a multivariate distribution based on the covariance matrix reported in their empirical study. Next, the indicator values for the nine latent variables were computed using the specified loadings and factor scores. The residual variances of the indicators were defined as <span class="math inline">1-\lambda^2</span>, where <span class="math inline">\lambda</span> represents the factor loading, ensuring that each indicator has unit variance. The predicted indicator was then calculated from the factor scores and regression coefficients, with its variance also set to one.</p>
+</section>
+<section id="composite-based-data-generation" class="level3">
+<h3 class="anchored" data-anchor-id="composite-based-data-generation">Composite-based data generation</h3>
+<p>In general, three scenarios can be distinguished in composite-based models: formative–formative (F–F), formative–reflective (F–R), and reflective–reflective (R–R). <span class="citation" data-cites="schlittgen2020data">Rainer Schlittgen et al. (<a href="#ref-schlittgen2020data" role="doc-biblioref">2020</a>)</span> demonstrated a composite-based data generation procedure that produces data from composite-based populations using the cbsem R package across all these scenarios. In this study, the R–R scenario was employed, in which outer weights are not required. The procedure requires the specification of path coefficients, loadings, and the variances and covariances of the exogenous constructs (see the vignette of the cbsem R package for further details) <span class="citation" data-cites="schlittgen2020r">(<a href="#ref-schlittgen2020r" role="doc-biblioref">R. Schlittgen, 2020</a>)</span>.</p>
+</section>
+</section>
+<section id="result" class="level2">
+<h2 class="anchored" data-anchor-id="result">Result</h2>
+<p>The methods presented in the block are ordered from left to right as follows:</p>
+<ol type="1">
+<li>SumScore: sum scoring method</li>
+<li>SEM_Reg: CB-SEM using regression method to calculate factor score</li>
+<li>SEM_Bar: CB-SEM using Barlett method to calculate factor score</li>
+<li>SAM: structural after measurement using Barlett method to calculate factor score</li>
+<li>SAM_Reg: structural after measurement using regression method to calculate factor score</li>
+<li>SGCCA: Sparse generalized canonical correlation analysis</li>
+<li>rESEM: regularized ESEM from Tra</li>
+<li>SEM_BASED: SEM based rule from de Rooij</li>
+<li>PLS: partial least square</li>
+<li>GLM: linear regression</li>
+<li>elastic: elastic net</li>
+</ol>
+<section id="all-conditions-m-weak-strong-s-weak-strong" class="level3">
+<h3 class="anchored" data-anchor-id="all-conditions-m-weak-strong-s-weak-strong">All conditions (M: weak, strong; S: weak, strong)</h3>
+<ul>
+<li><p>The X-axis is the training data sample size 100, 200, 500, 1000 from left to right.</p></li>
+<li><p>The Y-axis is the strength of the relationships in the measurement and structural model. From top to bottom is M: strong &amp; S: strong, M: strong &amp; S: weak, M: weak &amp; S: strong, and M: weak &amp; S: weak.</p></li>
+<li><p>I tried to fix the SAM method but we can see from the plot that result is quite unusual across both data generation method. I also drew plots with all conditions without SAM method below: <a href="#factor-based-without-sam">Factor-based (without SAM)</a></p></li>
+<li><p>I found out that plotting all conditions is very reader unfriendly so I also plotted boxplot with only two conditions below:</p>
+<p><a href="#measurement-strong-condition-without-sam">Measurement strong condition (without SAM)</a></p>
+<p><a href="#measurement-weak-condition-without-sam">Measurement weak condition (without SAM)</a></p></li>
+</ul>
+<section id="factor-based-all-method" class="level4">
+<h4 class="anchored" data-anchor-id="factor-based-all-method">Factor-based (All method)</h4>
+<p><img src="images/clipboard-3039594412.png" class="img-fluid"></p>
+</section>
+<section id="composite-based-all-method" class="level4">
+<h4 class="anchored" data-anchor-id="composite-based-all-method">Composite-based (All method)</h4>
+<p><img src="images/clipboard-277835770.png" class="img-fluid"></p>
+</section>
+<section id="factor-based-without-sam" class="level4">
+<h4 class="anchored" data-anchor-id="factor-based-without-sam">Factor-based (without SAM)</h4>
+<p><img src="images/clipboard-4164057750.png" class="img-fluid"></p>
+</section>
+<section id="composite-based-without-sam" class="level4">
+<h4 class="anchored" data-anchor-id="composite-based-without-sam">Composite-based (without SAM)</h4>
+<p><img src="images/clipboard-81234859.png" class="img-fluid"></p>
+</section>
+</section>
+<section id="measurement-strong-condition-without-sam" class="level3">
+<h3 class="anchored" data-anchor-id="measurement-strong-condition-without-sam">Measurement strong condition (without SAM)</h3>
+<section id="factor-based" class="level4">
+<h4 class="anchored" data-anchor-id="factor-based">Factor-based</h4>
+<p><img src="images/clipboard-1531013575.png" class="img-fluid"></p>
+</section>
+<section id="composite-based" class="level4">
+<h4 class="anchored" data-anchor-id="composite-based">Composite-based</h4>
+<p><img src="images/clipboard-109677139.png" class="img-fluid"></p>
+</section>
+</section>
+<section id="measurement-weak-condition-without-sam" class="level3">
+<h3 class="anchored" data-anchor-id="measurement-weak-condition-without-sam">Measurement weak condition (without SAM)</h3>
+<section id="factor-based-1" class="level4">
+<h4 class="anchored" data-anchor-id="factor-based-1">Factor-based</h4>
+<p><img src="images/clipboard-1856451052.png" class="img-fluid"></p>
+</section>
+<section id="composite-based-1" class="level4">
+<h4 class="anchored" data-anchor-id="composite-based-1">Composite-based</h4>
+<p><img src="images/clipboard-3134135848.png" class="img-fluid"></p>
+
+</section>
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-de2023sem" class="csl-entry" role="listitem">
+Rooij, M. de, Karch, J. D., Fokkema, M., Bakk, Z., Pratiwi, B. C., &amp; Kelderman, H. (2023). SEM-based out-of-sample predictions. <em>Structural Equation Modeling: A Multidisciplinary Journal</em>, <em>30</em>(1), 132–148.
+</div>
+<div id="ref-schlittgen2020r" class="csl-entry" role="listitem">
+Schlittgen, R. (2020). <em>R package sempls: Simulation, estimation and segmentation of composite based structural equation models (version 1.0. 0)</em>.
+</div>
+<div id="ref-schlittgen2020data" class="csl-entry" role="listitem">
+Schlittgen, Rainer, Sarstedt, M., &amp; Ringle, C. M. (2020). Data generation for composite-based structural equation modeling methods. <em>Advances in Data Analysis and Classification</em>, <em>14</em>(4), 747–757.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
