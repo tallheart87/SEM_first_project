@@ -355,8 +355,6 @@ result <- foreach(i = 1:rep) %dopar% {
 
   # Structural model
   Fy ~ Fa + Fb + Fc + Fd + Fe + Ff + Fg + Fh + Fi
-  
-  Fa ~~ 0*Fb + 0*Fc + 0*Fd + 0*Fe + 0*Ff + 0*Fg + 0*Fh + 0*Fi
 '
         
         ### Compute loadings and residual variances for each measurement block separately
