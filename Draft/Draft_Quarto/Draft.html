@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Hsin">
+
+<title>Draft</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="Draft_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Draft_files/libs/quarto-html/quarto.js"></script>
+<script src="Draft_files/libs/quarto-html/popper.min.js"></script>
+<script src="Draft_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Draft_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Draft_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Draft_files/libs/quarto-html/quarto-syntax-highlighting-07ba0ad10f5680c660e360ac31d2f3b6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Draft_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Draft_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Draft_files/libs/bootstrap/bootstrap-b8d30c7eeda119d43de224048e70de8f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#structural-equation-modeling-for-out-of-sample-prediction-a-comparative-study-of-methods." id="toc-structural-equation-modeling-for-out-of-sample-prediction-a-comparative-study-of-methods." class="nav-link active" data-scroll-target="#structural-equation-modeling-for-out-of-sample-prediction-a-comparative-study-of-methods.">Structural Equation Modeling for Out-of-Sample Prediction: A Comparative Study of Methods.</a>
+  <ul class="collapse">
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a></li>
+  <li><a href="#sem-based-approach" id="toc-sem-based-approach" class="nav-link" data-scroll-target="#sem-based-approach">2. SEM-Based Approach</a>
+  <ul class="collapse">
+  <li><a href="#one-stage-estimation" id="toc-one-stage-estimation" class="nav-link" data-scroll-target="#one-stage-estimation">2.1 One-Stage Estimation</a></li>
+  <li><a href="#two-stage-estimation" id="toc-two-stage-estimation" class="nav-link" data-scroll-target="#two-stage-estimation">2.2 Two-Stage Estimation</a></li>
+  </ul></li>
+  <li><a href="#machine-learning-approach" id="toc-machine-learning-approach" class="nav-link" data-scroll-target="#machine-learning-approach">3. Machine learning approach</a>
+  <ul class="collapse">
+  <li><a href="#ols-regression-model" id="toc-ols-regression-model" class="nav-link" data-scroll-target="#ols-regression-model">3.1 OLS regression model</a></li>
+  <li><a href="#elastic-net" id="toc-elastic-net" class="nav-link" data-scroll-target="#elastic-net">3.2 Elastic net</a></li>
+  </ul></li>
+  <li><a href="#sum-scoring-approach" id="toc-sum-scoring-approach" class="nav-link" data-scroll-target="#sum-scoring-approach">4. Sum Scoring Approach</a></li>
+  <li><a href="#simulation-study" id="toc-simulation-study" class="nav-link" data-scroll-target="#simulation-study">5. Simulation Study</a>
+  <ul class="collapse">
+  <li><a href="#design" id="toc-design" class="nav-link" data-scroll-target="#design">5.1 Design</a></li>
+  <li><a href="#criteria" id="toc-criteria" class="nav-link" data-scroll-target="#criteria">5.2 Criteria</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">5.3 Results</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">6. Conclusion</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Draft</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Hsin </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="structural-equation-modeling-for-out-of-sample-prediction-a-comparative-study-of-methods." class="level1">
+<h1>Structural Equation Modeling for Out-of-Sample Prediction: A Comparative Study of Methods.</h1>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<p>Predicting outcomes for individuals based on measured indicators is a popular task across psychology, health sciences, and social research in the recent years. Consider a concrete example: researchers have collected data from a sample of patients, measuring six items that assess mental health conditions (depression, stress, and related constructs) alongside a single item measuring quality of life. When new patients arrive in the clinic, clinicians and researchers face a practical question: how can we predict their quality of life based on their responses to the six mental health items? This predictive task exemplifies a class of problems that require statistical techniques collectively known as predictive modeling.</p>
+<p>Predictive modeling uses estimated parameters obtained from collected data to predict outcomes for new cases not included in the original sample, which is commonly referred to as out-of-sample prediction <span class="citation" data-cites="shmueli2016elephant">(<a href="#ref-shmueli2016elephant" role="doc-biblioref">Shmueli et al., 2016</a>)</span>. A fundamental requirement for reliable predictions is the model’s ability to accurately predict observable outcomes for such unseen data, as good performance on training data does not guarantee generalization to new cases. To evaluate a model’s predictive performance, practitioners typically divide the dataset into training and test sets: the training set is used to estimate model parameters, while the test set evaluates how well the trained model generalizes to unseen data.</p>
+<p>Within this framework, regression models represent one of the most commonly employed approaches. Using our example, we can divide the dataset into training and test subsets, where the six mental health items serve as predictors (<span class="math inline">x_{in}</span>) and quality of life serves as the outcome (<span class="math inline">y_n</span>) (see Figure 1). A linear regression model based on the six item scores can be expressed as:</p>
+<p><span class="math display">
+y_n = \beta_0 + \sum_{i=1}^{6} \beta_i x_{in} + \varepsilon_n
+</span></p>
+<p>where <span class="math inline">i</span> indexes the six predictor items, <span class="math inline">n</span> indexes sample size, <span class="math inline">\beta_0</span> is the intercept, <span class="math inline">\beta_i</span> are regression coefficients, and <span class="math inline">\varepsilon</span> is the error term. Based on the training data, regression coefficients can be estimated using ordinary least squares (OLS) or penalized estimation methods (e.g., ridge regression, LASSO). Once estimated, the model parameters are applied to test data to generate predictions for the outcome variable.</p>
+<p>However, a critical assumption underlying linear regression is that predictor variables are measured without error. In practice, psychological and health-related latent variables (such as depression, stress, or anxiety) are typically measured through multiple indicators, each of which contains measurement error. Structural equation modeling (SEM) was developed precisely to address measurement error in indicators. SEM combines two interconnected components: a measurement model that links indicators to latent variables through factor loadings (or weights), and a structural model that specifies relationships among latent variables. Returning to our motivating example, psychological theory suggests that the six mental health items reflect two underlying latent constructs: depression (<span class="math inline">\xi_1</span>; measured by the first three items) and stress (<span class="math inline">\xi_2</span>; measured by the last three items). Each latent variable is linearly related to its indicators, and this relationship is captured by the factor loadings (<span class="math inline">\lambda</span>). The two latent variables are then modeled as predictors of the outcome variable (<span class="math inline">y</span>), with the strength of these predictive effects expressed by the regression coefficients (<span class="math inline">\beta</span>) (see Figure 2).</p>
+<p>{Show two figures: one for regression model and one for SEM}</p>
+<p>SEM is now widely applied across psychology, organizational research, health sciences, and other domains where latent variables drive observed outcomes. To extend traditional SEM frameworks to out-of-sample prediction, researchers have proposed several distinct methodological approaches. <span class="citation" data-cites="hair2017pls">Hair Jr et al. (<a href="#ref-hair2017pls" role="doc-biblioref">2017</a>)</span> advocated for Partial Least Squares (PLS) approaches and their associated prediction capabilities. More recently, <span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span> proposed a general SEM-based prediction rule applicable to covariance-based SEM. These developments reflect an important conceptual distinction which is researchers can make predictions in fundamentally different ways.</p>
+<p>Despite the growing development of SEM-based prediction methods over the past decade, the empirical literature has not systematically compared their predictive performance across different measurement structures and data conditions common in psychological assessment. While individual methods have been documented and recommended in methodological papers, questions remain regarding when each approach works best, how they perform relative to one another, and which factors (e.g., sample size, the strength of measurement model) influence their comparative effect</p>
+<p>The present study addresses this gap by conducting a comprehensive comparative analysis of SEM-based prediction methods for out-of-sample prediction. We compared six SEM-based approaches, two machine learning approaches and the typical sum scoring method which is total 9 methods. Our focus extends beyond explanatory adequacy to examine predictive performance: which method produces better accuracy of out-of-sample predictions across varying conditions? The goal is to provide researchers with practical guidance on method selection, enabling them to choose prediction approaches best suited to their research questions and data structures.</p>
+</section>
+<section id="sem-based-approach" class="level2">
+<h2 class="anchored" data-anchor-id="sem-based-approach">2. SEM-Based Approach</h2>
+<p>Depending on the estimation stage, SEM-based approaches can be classified into two categories: the one-stage and two-stage estimation approaches. In the one-stage estimation approach, all parts of the model, including the measurement and structural models, are estimated simultaneously. In contrast, the two-stage estimation approach separates the estimation process into two steps. In the first stage, the measurement model is estimated to obtain factor scores. In the second stage, these estimated factor scores are then used to estimate the structural model. A comparison of methods can be seen in Table 1. In the following, we introduce the methods included in our study according to this classification.</p>
+<section id="one-stage-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="one-stage-estimation">2.1 One-Stage Estimation</h3>
+<section id="covariance-based-sem-cb-sem" class="level4">
+<h4 class="anchored" data-anchor-id="covariance-based-sem-cb-sem">2.1.1 Covariance-Based SEM (CB-SEM)</h4>
+<p>CB-SEM is one of the most commonly used SEM method in psychology research for testing theoretical models involving latent factors. It usually relies on maximum likelihood (ML) estimation and uses iterative algorithms to minimize the difference between the observed and model-implied covariance matrices. As a one-stage estimation procedure, CB-SEM simultaneously estimates factor loadings and regression coefficients. However, factor scores are not directly estimated during this stage; instead, they can only be derived post hoc using methods such as the regression (Thurstone’s), least-squares, or Bartlett methods (see <span class="citation" data-cites="takane2018comparisons">Takane &amp; Hwang (<a href="#ref-takane2018comparisons" role="doc-biblioref">2018</a>)</span> for a detailed comparison).</p>
+<p>Despite its popularity, CB-SEM may become problematic when the number of estimated parameters approaches or exceeds the sample size. Its reliance on ML estimation and the simultaneous estimation of all model parameters increase the risk of biased estimates and non-convergence, particularly as model complexity increases <span class="citation" data-cites="wolf2013sample">(<a href="#ref-wolf2013sample" role="doc-biblioref">Wolf et al., 2013</a>)</span>.</p>
+<p>In our simulation study, we employed the lavaan package <span class="citation" data-cites="rosseel2012lavaan">(<a href="#ref-rosseel2012lavaan" role="doc-biblioref">Rosseel, 2012</a>)</span> to estimate factor loadings and regression coefficients using ML estimation. For out-of-sample prediction, we obtained test data factor scores using the regression and Bartlett methods and applied them to the structural model estimated from the training data. While the regression method is the default in <em>lavaan</em>, prior evidence suggests that using Bartlett-type scoring in combination with consistent estimation procedures can yield better parameter recovery <span class="citation" data-cites="takane2018comparisons">(<a href="#ref-takane2018comparisons" role="doc-biblioref">Takane &amp; Hwang, 2018</a>)</span>. Therefore, we included both factor score approaches in our simulation to provide a more comprehensive comparison.</p>
+</section>
+<section id="sem-based-prediction-rule" class="level4">
+<h4 class="anchored" data-anchor-id="sem-based-prediction-rule">2.1.2 SEM-Based Prediction Rule</h4>
+<p>The SEM-based prediction rule developed by <span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span> extends the use of CB-SEM beyond explanatory analysis to predictive modeling. This method leverages the model-implied joint mean and covariance structure between observed predictors and outcomes to generate out-of-sample predictions. Specifically, after estimating a CB-SEM on a training dataset (using maximum likelihood or other suitable estimation methods), the fitted model provides estimates of the model-implied mean vectors (<span class="math inline">\hat{\mu}_x</span>, <span class="math inline">\hat{\mu}_y</span>) <em>and</em> covariance matrices (<span class="math inline">\hat{\Sigma}_{xx}</span>, <span class="math inline">\hat{\Sigma}_{xy}</span>), which define the joint multivariate normal distribution of predictors (<span class="math inline">X</span>) and outcomes (<span class="math inline">Y</span>). Predicted values for new observations (<span class="math inline">x_0</span>) are then obtained from the conditional expectation which is</p>
+<p><span class="math display">
+\hat{y} = \hat{\mu}_y + \hat{\Sigma}_{yx} \hat{\Sigma}_{xx}^{-1} (x_0 - \hat{\mu}_x)
+</span></p>
+<p>Unlike traditional CB-SEM approaches that rely on estimated factor scores, the SEM-based prediction rule directly computes predicted values through the conditional distribution of the outcome variables.</p>
+<p><span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span> compared the prediction performance of the SEM-based prediction method with several machine learning approaches, including regularized regression methods and OLS. The results show that the SEM-based prediction rule outperformed these methods, particularly in small sample sizes, and remained robust to violations of normality. This suggests that the SEM-based prediction rule effectively accounts for measurement error and enables out-of-sample prediction within CB-SEM, even under limited data conditions. However, in cases where the SEM model is misspecified, one of the regularized regression methods, elastic net, demonstrated better prediction performance, especially with larger sample sizes. Therefore, while we expect the SEM-based prediction rule to outperform machine learning approaches in small samples with correctly specified models, the comparative performance across different SEM approaches remains underexplored.</p>
+<p>In the simulation study, we first use the <em>lavaan</em> package to get the model-implied joint mean and covariance of the observed variables of the training data then we use the <em>lavPredictY</em> function to get the predicted values directly.</p>
+</section>
+</section>
+<section id="two-stage-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="two-stage-estimation">2.2 Two-Stage Estimation</h3>
+<section id="structural-after-measurement-sam" class="level4">
+<h4 class="anchored" data-anchor-id="structural-after-measurement-sam">2.2.1 Structural After Measurement (SAM)</h4>
+<p>SAM follows a two-stage estimation which first estimates the parameters related to the measurement model using (multiple) confirmatory factor analysis (CFA), and then estimates the remaining parameters of the structural model based on the results from the previous stage. The advantages of SAM include greater robustness against local misspecifications, fewer convergence issues, and an expanded range of possible estimators <span class="citation" data-cites="dhaene2023evaluation">(<a href="#ref-dhaene2023evaluation" role="doc-biblioref">Dhaene &amp; Rosseel, 2023</a>)</span>.</p>
+<p>There are two different SAM approaches: local SAM and global SAM. The difference lies in how the structural parameters are obtained. In local SAM, the measurement model parameters are first estimated, and their point estimates are then used to compute the model-implied mean vector and variance-covariance matrix of the factor scores. These derived statistics subsequently serve as input for estimating the structural model parameters. In global SAM, the parameters of the measurement model are fixed, and only the structural parameters are freely estimated. In the study by <span class="citation" data-cites="rosseel2022structural">Rosseel &amp; Loh (<a href="#ref-rosseel2022structural" role="doc-biblioref">2022</a>)</span> pointed out that local SAM generally performs slightly better than global SAM, especially in small samples based on the simulation results. In addition, the function <em>sam()</em> in <em>lavaan</em> package implements local SAM by default. Therefore, in our simulation study, we focus on the local SAM, and the simulation is based on the codes provided by <span class="citation" data-cites="dhaene2023evaluation">Dhaene &amp; Rosseel (<a href="#ref-dhaene2023evaluation" role="doc-biblioref">2023</a>)</span> in the OSF repository: <a href="https://osf.io/f5287/" class="uri">https://osf.io/f5287/</a>.</p>
+</section>
+<section id="pls-sem" class="level4">
+<h4 class="anchored" data-anchor-id="pls-sem">2.2.2 PLS-SEM</h4>
+<p>The partial least squares approach to SEM is a popular composite-based SEM methods which is developed by <span class="citation" data-cites="wolds1980soft">Wolds (<a href="#ref-wolds1980soft" role="doc-biblioref">1980</a>)</span> and <span class="citation" data-cites="lohmoller2013latent">Lohmöller (<a href="#ref-lohmoller2013latent" role="doc-biblioref">2013</a>)</span>. PLS-SEM comprises three key components: the inner model (structural model), the outer model (measurement model), and the weight relations. While both CB-SEM and PLS-SEM include structural and measurement models to represent the relationships among factors and their indicators, the weights are unique to the PLS approach. These weights link the indicators to their corresponding factors by forming factor scores. There are three main difference between CB-SEM and PLS-SEM:</p>
+<p>(1) Statistical Assumptions: Whereas CB-SEM requires multivariate normality distributional assumptions, PLS-SEM is a soft-modeling technique which makes fewer distributional assumptions on the data.</p>
+<p>(2) Estimation: In CB-SEM, the discrepancy between the estimated and sample covariance matrices is minimized (usually using ML) to estimate the model parameters in one stage, where as in PLS-SEM, the explained variance of the latent variables is maximized by a two-stage estimation in an iterative sequence of ordinary least squares (OLS) until convergence (e.g., <span class="citation" data-cites="monecke2012sempls">Monecke &amp; Leisch (<a href="#ref-monecke2012sempls" role="doc-biblioref">2012</a>)</span>; <span class="citation" data-cites="hair2011pls">Joe F. Hair et al. (<a href="#ref-hair2011pls" role="doc-biblioref">2011</a>)</span>). The final measurement model weights are used to form the final factor scores which are used in (multiple) OLS regression(s) to estimate the final regression coefficients.</p>
+<p>(3) Factor scores: The factor scores are calculated as linear combinations of their indicators in PLS-SEM. Once calculated, these composite scores are treated as scores without measurement error and used directly in regression equations between constructs. This direct computation gives component-based models a greater advantage for predictive modeling, especially in situations with small sample sizes or complex model structures, where CB-SEM may encounter convergence or estimation difficulties <span class="citation" data-cites="tenenhaus2008component hair2017mirror">(<a href="#ref-hair2017mirror" role="doc-biblioref">Joseph F. Hair et al., 2017</a>; <a href="#ref-tenenhaus2008component" role="doc-biblioref">M. Tenenhaus, 2008</a>)</span>.</p>
+<p>However, when the true data-generating process follows a common factor model, PLS-SEM has been shown to overestimate factor loadings and underestimate structural path coefficients <span class="citation" data-cites="dijkstra2015consistent">(<a href="#ref-dijkstra2015consistent" role="doc-biblioref">Dijkstra &amp; Henseler, 2015</a>)</span>. To account for this limitation, our simulation study also considers a composite-based data-generating process, allowing for a more comprehensive comparison of model performance. In conducting the PLS-SEM simulations, we followed <span class="citation" data-cites="ray2021seminr">Ray et al. (<a href="#ref-ray2021seminr" role="doc-biblioref">2021</a>)</span> and used the <em>SEMinR</em> package to obtain the predicted values.</p>
+</section>
+<section id="sparse-generalized-canonical-correlation-analysis-sgcca" class="level4">
+<h4 class="anchored" data-anchor-id="sparse-generalized-canonical-correlation-analysis-sgcca">2.2.3 Sparse generalized canonical correlation analysis (SGCCA)</h4>
+<p>SGCCA extends PLS-SEM to address variable selection issues, making it suitable for identifying key indicators and uncovering latent structures in a data-driven manner <span class="citation" data-cites="Tenenhaus2014Variable">(<a href="#ref-Tenenhaus2014Variable" role="doc-biblioref">A. Tenenhaus et al., 2014</a>)</span>. It builds on the Regularized Generalized Canonical Correlation Analysis (RGCCA) framework <span class="citation" data-cites="tenenhaus2011regularized">(<a href="#ref-tenenhaus2011regularized" role="doc-biblioref">A. Tenenhaus &amp; Tenenhaus, 2011</a>)</span> by introducing penalization on the outer weights, thereby achieving sparsity and retaining only the most relevant indicators for each latent factor. In contrast to CB-SEM and PLS-SEM, which are typically confirmatory approaches, SGCCA serves as a more exploratory method that identifies latent structures and relationships in a data-driven way. We include SGCCA in our comparison because it is a composite-based approach that offers an exploratory, data-driven alternative to CB-SEM and PLS-SEM while performing variable selection.</p>
+<p>In this study, we use the package <em>RGCCA</em> <span class="citation" data-cites="RGCCA">(<a href="#ref-RGCCA" role="doc-biblioref">F. Tenenhaus et al., 2023</a>)</span> to obtain the outer weights (<span class="math inline">\mathbf{w}</span>) from the measurement model in the first stage and calculate the factor scores by <span class="math inline">\hat{\boldsymbol{\eta}}=\mathbf{w}\mathbf{x}</span>. In the second stage, we estimate the inner weights from the structural model using OLS regression.</p>
+</section>
+<section id="regularized-exploraty-structural-equation-modeling-resem" class="level4">
+<h4 class="anchored" data-anchor-id="regularized-exploraty-structural-equation-modeling-resem">2.2.4 Regularized Exploraty Structural Equation Modeling (RESEM)</h4>
+<p>RESEM is a two-stage approach developed for exploratory factor analysis that integrates regularization techniques into the estimation process <span class="citation" data-cites="le2024exploratory">(<a href="#ref-le2024exploratory" role="doc-biblioref">Lê et al., 2024</a>)</span>. In the first stage, the measurement model is estimated using a least-squares approach, where regularization methods such as the LASSO penalty or cardinality constraints are applied to induce sparsity in the loading matrix. This encourages a simple structure in which each indicator primarily loads on a single factor, facilitating clearer factor interpretation and improving estimation stability. In the second stage, the estimated factor scores are used to model structural relationships among the latent factors, typically via multiple linear regression.</p>
+<p>A distinctive feature of RESEM is that it allows the unique error variances in the measurement model to be weakly correlated—an approach known as the approximate factor model. This relaxes the assumption of uncorrelated errors in the traditional common factor model and can improve the robustness of factor loading and score estimation. While RESEM was originally proposed to address challenges in high-dimensional settings, its regularization framework and flexible modeling of residuals make it a valuable method for comparison in a broader range of applications.</p>
+<p>This study utilized the functions provided by <span class="citation" data-cites="le2024exploratory">Lê et al. (<a href="#ref-le2024exploratory" role="doc-biblioref">2024</a>)</span>, which are available on GitHub at <a href="https://github.com/trale97/RegularizedLSLV" class="uri">https://github.com/trale97/RegularizedLSLV</a></p>
+</section>
+</section>
+</section>
+<section id="machine-learning-approach" class="level2">
+<h2 class="anchored" data-anchor-id="machine-learning-approach">3. Machine learning approach</h2>
+<p>Predictive modeling is a key focus in machine learning, which emphasizes learning patterns from data to make generalizable predictions, often without strong assumptions about the underlying data-generating process. Unlike SEM-based approaches, which explicitly account for measurement error and emphasize parameter estimation and theory testing, machine learning methods typically do not model measurement error and instead focus on optimizing predictive performance, often through regularization and cross-validation techniques. In our study, we concluded two machine learning methods: (1) the OLS regression, and (2) the elastic net.</p>
+<section id="ols-regression-model" class="level3">
+<h3 class="anchored" data-anchor-id="ols-regression-model">3.1 OLS regression model</h3>
+<p>Linear regression is one of the foundational model in machine learning, and it is most commonly estimated using OLS. However, it is well known that OLS often performs poorly in terms of both prediction accuracy and model interpretability. Hence, OLS is included in this study as a baseline method.</p>
+</section>
+<section id="elastic-net" class="level3">
+<h3 class="anchored" data-anchor-id="elastic-net">3.2 Elastic net</h3>
+<p>To address limitations of OLS, various regularized regression methods have been proposed. One of the most well-known is the LASSO <span class="citation" data-cites="tibshirani1996regression">(<a href="#ref-tibshirani1996regression" role="doc-biblioref">Tibshirani, 1996</a>)</span>, which improves predictive performance and enables automatic variable selection through an L1-penalty on the regression coefficients. Due to the nature of this penalty, LASSO performs both continuous shrinkage and automatic variable selection simultaneously. However, as noted by <span class="citation" data-cites="zou2005regularization">Zou &amp; Hastie (<a href="#ref-zou2005regularization" role="doc-biblioref">2005</a>)</span>, LASSO tends to perform poorly in variable selection when the number of predictors is much larger than the number of observations. To address this issue, they proposed a new method called elastic net, which combines the penalties of both LASSO and ridge regression. While LASSO encourages sparsity, ridge regression adds a penalty to the size of the coefficients, which helps reduce variance and handle multicollinearity effectively. By combining these two penalties, elastic net enables variable selection while maintaining model stability in the presence of highly correlated predictors.</p>
+<p>We include elastic net in our comparison since <span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span> indicates that, although SEM-based prediction performs well in small and correctly specified samples, elastic net achieves superior prediction when the SEM model is misspecified or with larger datasets. We use the <em>glmnet</em> package <span class="citation" data-cites="friedman2021package">(<a href="#ref-friedman2021package" role="doc-biblioref">Friedman et al., 2021</a>)</span> to perform the elastic net simulation. Based on the training data, cross-validation is carried out to determine the mixing parameter (<span class="math inline">\alpha</span>) and the regularization parameter (<span class="math inline">\lambda</span>). Once these parameters are selected, the regression coefficients are estimated using the training data and then fixed. The model is subsequently applied to the test data to evaluate its prediction performance.</p>
+</section>
+</section>
+<section id="sum-scoring-approach" class="level2">
+<h2 class="anchored" data-anchor-id="sum-scoring-approach">4. Sum Scoring Approach</h2>
+<p>In psychological research, the sum scoring method is a common practice. It assumes that all items contribute equally to the underlying construct and that the error variances are identical across items, which is referred to as the parallel model in psychometric terms <span class="citation" data-cites="mcneish2020thinking">(<a href="#ref-mcneish2020thinking" role="doc-biblioref">McNeish &amp; Wolf, 2020</a>)</span>. Based on this assumption, researchers often sum items that are theoretically or empirically supported (e.g., through factor analysis) to load on the same factor. The resulting sum scores are then used in linear regression to examine relationships between latent factors. When speed and simplicity matter more than precision, such as in clinical screening tools, sum scoring method may be sufficient. However, in research settings where scales are used to investigate relationships between latent factors, the assumption of equal item importance, unidimensionality and neglect of measurement error can undermine validity, reliability, and classification accuracy, even when sum scores and factor scores are highly correlated <span class="citation" data-cites="widaman2023thinking mcneish2023psychometric">(<a href="#ref-mcneish2023psychometric" role="doc-biblioref">McNeish, 2023</a>; <a href="#ref-widaman2023thinking" role="doc-biblioref">Widaman &amp; Revelle, 2023</a>)</span>.</p>
+<p>In our simulation study, we conducted exploratory factor analysis (EFA) using the <em>psych</em> package <span class="citation" data-cites="revelle2015package">(<a href="#ref-revelle2015package" role="doc-biblioref">Revelle &amp; Revelle, 2015</a>)</span> on the training dataset and computed sum scores based on the resulting factor structure.</p>
+</section>
+<section id="simulation-study" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-study">5. Simulation Study</h2>
+<section id="design" class="level3">
+<h3 class="anchored" data-anchor-id="design">5.1 Design</h3>
+<p>The model settings for this simulation study are based on <span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span>. In the structural model, nine latent variables (<span class="math inline">\eta_x</span>) predict one outcome indicator (<span class="math inline">y</span>). Each latent variable is measured by four observed indicator items, resulting in a total of 37 observed (simulated) variables (see Figure 1).</p>
+<p><img src="images/clipboard-1721108588.png" class="img-fluid" width="301"></p>
+<p>Figure 1. Fully reflective SEM for the simulation study</p>
+<p>In the simulation we manipulated four factors: data generation, sample size, strength of measurement model, and strength of the structural model.</p>
+<p>(1) Data generation methods with two levels: factor-based and composite-based data generation.</p>
+<p>The factor-based data generation procedure follows the approach described in <span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span>. Factor scores were first generated from a multivariate distribution based on the covariance matrix reported in their empirical study. Next, the indicator values for the nine latent variables were computed using the specified loadings and factor scores. The residual variances of the indicators were defined as <span class="math inline">1-\lambda^2</span>, where <span class="math inline">\lambda</span> represents the factor loading, ensuring that each indicator has unit variance. The predicted indicator was then calculated from the factor scores and regression coefficients, with its variance also set to one.</p>
+<p>For the composite-based model, three scenarios can be distinguished in general: formative–formative (F–F), formative–reflective (F–R), and reflective–reflective (R–R). <span class="citation" data-cites="schlittgen2020data">Rainer Schlittgen et al. (<a href="#ref-schlittgen2020data" role="doc-biblioref">2020</a>)</span> demonstrated a composite-based data generation procedure that produces data from composite-based populations using the <em>cbsem</em> R package across all these scenarios. In this study, the F–F scenario was employed. The procedure requires the specification of path coefficients, weights, and the variances and covariances of the exogenous constructs (see the vignette of the cbsem R package for further details) <span class="citation" data-cites="schlittgen2020r">(<a href="#ref-schlittgen2020r" role="doc-biblioref">R. Schlittgen, 2020</a>)</span>.</p>
+<p>(2) Sample size of the training set with four levels: 100, 200, 500, 1000</p>
+<p>The training sample size factor includes four levels: 100, 200, 500, and 1,000, representing a broad range of conditions. The test set size is fixed at 1,000 observations across all conditions.</p>
+<p>(3) Strength of the relationships in the measurement model with two levels: weak and strong.</p>
+<p>In the weak condition, factor loadings are drawn from a uniform distribution between 0.20 and 0.50. In the strong condition, factor loadings are also drawn from a uniform distribution between 0.50 and 0.80. Item means are generated from a uniform distribution ranging from 1.50 to 3.00.</p>
+<p>(4) Strength of the relationships in the structural model with two levels: weak and strong.</p>
+<p>For the weak condition, regression coefficients are drawn from a uniform distribution between 0.15 and 0.25. For the strong condition, coefficients are drawn from a uniform distribution between 0.25 and 0.40. The signs of the regression coefficients match those used in the empirical example reported by <span class="citation" data-cites="de2023sem">Rooij et al. (<a href="#ref-de2023sem" role="doc-biblioref">2023</a>)</span>.</p>
+</section>
+<section id="criteria" class="level3">
+<h3 class="anchored" data-anchor-id="criteria">5.2 Criteria</h3>
+<p>To obtain a full picture of not only the predictive power of each method but also how well its explanatory power performs, three aspects are analyzed for each method: the model’s predictive power, and the parameter recovery of the structural and measurement parts.</p>
+<section id="predictive-performance" class="level4">
+<h4 class="anchored" data-anchor-id="predictive-performance">5.2.1 Predictive performance</h4>
+<p>To evaluate predictive performance, we examine how closely the estimated predicted values (<span class="math inline">\hat{y}_i</span>) match the true values (<span class="math inline">y_i</span>) based on the test data. Three criteria are employed: the mean absolute error (MAE), root mean square error (RMSE), and out-of-sample <span class="math inline">R^2</span>.</p>
+<p>The MAE measures the average magnitude of the errors in a set of predictions without considering their direction. It is the average absolute differences between the predictions and the actual observations, with all the individual differences having equal weight. <span class="math display">
+\text{MAE}=\frac{1}{n \cdot r}\sum_{i=1}^{n}\left|\,y_i-\hat{y}_i\,\right|
+</span></p>
+<p>where <span class="math inline">n</span> and <span class="math inline">r</span> are the sample size and the number of replications, respectively.</p>
+<p>The RMSE is the square root of the average of the squared differences between the predictions and the actual observations.</p>
+<p><span class="math display">
+\text{RMSE}=\frac{1}{r}\cdot\sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(y_i-\hat{y}_i\right)^2}
+</span></p>
+<p>The out-of-sample <span class="math inline">R^2</span> <span class="citation" data-cites="park2023extending">(<a href="#ref-park2023extending" role="doc-biblioref">Park, 2023</a>)</span> is equivalent to the <span class="math inline">R^2</span> measure for OLS, but applied for an independent out-of-sample test set.</p>
+<p><span class="math display">
+R^{2}_{\text{out-of-sample}} \;=\; 1 \;-\;
+\frac{\left\lVert y_i - \hat{y}_i \right\rVert^{2}_{2}}
+     {\left\lVert y_i \right\rVert^{2}_{2}}
+</span></p>
+<p>The lower MAE, RMSE and out-of-sample <span class="math inline">R^2</span> indicate higher predicted performance for the method.</p>
+</section>
+<section id="structural-model-parameter-recovery" class="level4">
+<h4 class="anchored" data-anchor-id="structural-model-parameter-recovery">5.2.2 Structural model parameter recovery</h4>
+<p>To assess the parameter recovery of the structural model, we evaluate the differences between the estimated regression coefficients (<span class="math inline">\hat{\beta}</span>) obtained from the training data and the true coefficients (<span class="math inline">\beta</span>) using two criteria: MAE and RMSE.</p>
+<p><span class="math display"> \text{MAE} \;=\; \frac{1}{n \cdot r} \sum_{i=1}^n \bigl|\hat\beta^{} - \beta\bigr|. </span></p>
+<p><span class="math display"> \mathrm{RMSE} \;=\; \frac{1}{r}\cdot\sqrt{\frac{1}{n} \sum_{i=1}^n \bigl(\hat\beta - \beta\bigr)^{2}}. </span></p>
+</section>
+<section id="measurement-model-parameter-recovery" class="level4">
+<h4 class="anchored" data-anchor-id="measurement-model-parameter-recovery">5.2.3 Measurement model parameter recovery</h4>
+<p>To assess the parameter recovery of the measurement model, congruence coefficient and zero/nonzero recovery rate PL are used to check the loadings’ recovery performance.</p>
+<p>The Tucker’s congruence coefficient measures the similarity between the estimated and true factor loadings. It is calculated as the cosine similarity between loading vectors and ranges from −1 to 1, with a value of 1 indicating perfect recovery. To evaluate the accuracy of loading recovery in the measurement model, we follow the guideline by <span class="citation" data-cites="lorenzo2006tucker">Lorenzo-Seva &amp; Ten Berge (<a href="#ref-lorenzo2006tucker" role="doc-biblioref">2006</a>)</span>: a congruence coefficient greater than 0.95 indicates excellent recovery, values between 0.85 and 0.94 indicate fair to good recovery, and values below 0.85 suggest poor recovery. We use the function <em>factor.congruence()</em> from <em>psych</em> package.</p>
+<p>Zero/nonzero recovery rate PL represents the proportion of correctly recovered loadings (both zeros and nonzeros) relative to the total number of true loadings. A higher PL value indicates better structural recovery, with PL = 1 representing perfect recovery (all true zeros and nonzeros correctly identified), while lower values suggest poorer recovery accuracy.</p>
+<p><span class="math display">
+PL \;=\;
+\frac{
+  \#\text{ correctly nonzero loadings}
+  \;+\;
+  \#\text{ correctly identified zero loadings}
+}{
+  \#\text{ loadings in }{\text{P}}_{\text{true}}
+}\,.
+</span></p>
+</section>
+</section>
+<section id="results" class="level3">
+<h3 class="anchored" data-anchor-id="results">5.3 Results</h3>
+<section id="predictive-power" class="level4">
+<h4 class="anchored" data-anchor-id="predictive-power">5.3.1 Predictive power</h4>
+</section>
+<section id="structure-parameter-recovery" class="level4">
+<h4 class="anchored" data-anchor-id="structure-parameter-recovery">5.3.2 Structure parameter recovery</h4>
+</section>
+<section id="measurement-parameter-recovery" class="level4">
+<h4 class="anchored" data-anchor-id="measurement-parameter-recovery">5.3.3 Measurement parameter recovery</h4>
+</section>
+</section>
+</section>
+<section id="conclusion" class="level2 unnumbered">
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">6. Conclusion</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-dhaene2023evaluation" class="csl-entry" role="listitem">
+Dhaene, S., &amp; Rosseel, Y. (2023). An evaluation of non-iterative estimators in the structural after measurement (SAM) approach to structural equation modeling (SEM). <em>Structural Equation Modeling: A Multidisciplinary Journal</em>, <em>30</em>(6), 926–940.
+</div>
+<div id="ref-dijkstra2015consistent" class="csl-entry" role="listitem">
+Dijkstra, T. K., &amp; Henseler, J. (2015). Consistent partial least squares path modeling. <em>MIS Quarterly</em>, <em>39</em>(2), 297–316.
+</div>
+<div id="ref-friedman2021package" class="csl-entry" role="listitem">
+Friedman, J., Hastie, T., Tibshirani, R., Narasimhan, B., Tay, K., Simon, N., &amp; Qian, J. (2021). Package <span>“glmnet.”</span> <em>CRAN R Repositary</em>, <em>595</em>, 874.
+</div>
+<div id="ref-hair2017mirror" class="csl-entry" role="listitem">
+Hair, Joseph F., Hult, G. T. M., Ringle, C. M., Sarstedt, M., &amp; Thiele, K. O. (2017). Mirror, mirror on the wall: A comparative evaluation of composite-based structural equation modeling methods. <em>Journal of the Academy of Marketing Science</em>, <em>45</em>, 616–632.
+</div>
+<div id="ref-hair2011pls" class="csl-entry" role="listitem">
+Hair, Joe F., Ringle, C. M., &amp; Sarstedt, M. (2011). PLS-SEM: Indeed a silver bullet. <em>Journal of Marketing Theory and Practice</em>, <em>19</em>(2), 139–152.
+</div>
+<div id="ref-hair2017pls" class="csl-entry" role="listitem">
+Hair Jr, J. F., Matthews, L. M., Matthews, R. L., &amp; Sarstedt, M. (2017). PLS-SEM or CB-SEM: Updated guidelines on which method to use. <em>International Journal of Multivariate Data Analysis</em>, <em>1</em>(2), 107–123.
+</div>
+<div id="ref-le2024exploratory" class="csl-entry" role="listitem">
+Lê, T. T., Vermunt, J., &amp; Van Deun, K. (2024). <em>Exploratory structural equation modeling and the curse of dimensionality: A regularized least-squares approach</em>.
+</div>
+<div id="ref-lohmoller2013latent" class="csl-entry" role="listitem">
+Lohmöller, J.-B. (2013). <em>Latent variable path modeling with partial least squares</em>. Springer Science &amp; Business Media.
+</div>
+<div id="ref-lorenzo2006tucker" class="csl-entry" role="listitem">
+Lorenzo-Seva, U., &amp; Ten Berge, J. M. (2006). Tucker’s congruence coefficient as a meaningful index of factor similarity. <em>Methodology</em>, <em>2</em>(2), 57–64.
+</div>
+<div id="ref-mcneish2023psychometric" class="csl-entry" role="listitem">
+McNeish, D. (2023). Psychometric properties of sum scores and factor scores differ even when their correlation is 0.98: A response to widaman and revelle. <em>Behavior Research Methods</em>, <em>55</em>(8), 4269–4290.
+</div>
+<div id="ref-mcneish2020thinking" class="csl-entry" role="listitem">
+McNeish, D., &amp; Wolf, M. G. (2020). Thinking twice about sum scores. <em>Behavior Research Methods</em>, <em>52</em>, 2287–2305.
+</div>
+<div id="ref-monecke2012sempls" class="csl-entry" role="listitem">
+Monecke, A., &amp; Leisch, F. (2012). semPLS: Structural equation modeling using partial least squares. <em>Journal of Statistical Software</em>, <em>48</em>, 1–32.
+</div>
+<div id="ref-park2023extending" class="csl-entry" role="listitem">
+Park, S. (2023). <em>Extending principal covariates regression for high-dimensional multi-block data</em>.
+</div>
+<div id="ref-ray2021seminr" class="csl-entry" role="listitem">
+Ray, S., Danks, N., &amp; Calero Valdez, A. (2021). SEMinR: Domain-specific language for building, estimating, and visualizing structural equation models in r. <em>Estimating, and Visualizing Structural Equation Models in R (August 6, 2021)</em>.
+</div>
+<div id="ref-revelle2015package" class="csl-entry" role="listitem">
+Revelle, W., &amp; Revelle, M. W. (2015). Package <span>“psych.”</span> <em>The Comprehensive R Archive Network</em>, <em>337</em>(338), 161–165.
+</div>
+<div id="ref-de2023sem" class="csl-entry" role="listitem">
+Rooij, M. de, Karch, J. D., Fokkema, M., Bakk, Z., Pratiwi, B. C., &amp; Kelderman, H. (2023). SEM-based out-of-sample predictions. <em>Structural Equation Modeling: A Multidisciplinary Journal</em>, <em>30</em>(1), 132–148.
+</div>
+<div id="ref-rosseel2012lavaan" class="csl-entry" role="listitem">
+Rosseel, Y. (2012). Lavaan: An r package for structural equation modeling. <em>Journal of Statistical Software</em>, <em>48</em>, 1–36.
+</div>
+<div id="ref-rosseel2022structural" class="csl-entry" role="listitem">
+Rosseel, Y., &amp; Loh, W. W. (2022). A structural after measurement approach to structural equation modeling. <em>Psychological Methods</em>.
+</div>
+<div id="ref-schlittgen2020r" class="csl-entry" role="listitem">
+Schlittgen, R. (2020). <em>R package sempls: Simulation, estimation and segmentation of composite based structural equation models (version 1.0. 0)</em>.
+</div>
+<div id="ref-schlittgen2020data" class="csl-entry" role="listitem">
+Schlittgen, Rainer, Sarstedt, M., &amp; Ringle, C. M. (2020). Data generation for composite-based structural equation modeling methods. <em>Advances in Data Analysis and Classification</em>, <em>14</em>(4), 747–757.
+</div>
+<div id="ref-shmueli2016elephant" class="csl-entry" role="listitem">
+Shmueli, G., Ray, S., Estrada, J. M. V., &amp; Chatla, S. B. (2016). The elephant in the room: Predictive performance of PLS models. <em>Journal of Business Research</em>, <em>69</em>(10), 4552–4564.
+</div>
+<div id="ref-takane2018comparisons" class="csl-entry" role="listitem">
+Takane, Y., &amp; Hwang, H. (2018). Comparisons among several consistent estimators of structural equation models. <em>Behaviormetrika</em>, <em>45</em>, 157–188.
+</div>
+<div id="ref-Tenenhaus2014Variable" class="csl-entry" role="listitem">
+Tenenhaus, A., Philippe, C., Guillemot, V., Le Cao, K.-A., Grill, J., &amp; Frouin, V. (2014). Variable selection for generalized canonical correlation analysis. <em>Biostatistics</em>, <em>15</em>(3), 569–583. <a href="https://doi.org/10.1093/biostatistics/kxu001">https://doi.org/10.1093/biostatistics/kxu001</a>
+</div>
+<div id="ref-tenenhaus2011regularized" class="csl-entry" role="listitem">
+Tenenhaus, A., &amp; Tenenhaus, M. (2011). Regularized generalized canonical correlation analysis. <em>Psychometrika</em>, <em>76</em>(2), 257–284.
+</div>
+<div id="ref-RGCCA" class="csl-entry" role="listitem">
+Tenenhaus, F., Guillemot, S., Tenenhaus, L., Clemenccon, V., &amp; Chatelain, A. (2023). <em>RGCCA: Regularized and sparse generalized canonical correlation analysis for multiblock data</em>. Retrieved from <a href="https://CRAN.R-project.org/package=RGCCA">https://CRAN.R-project.org/package=RGCCA</a>
+</div>
+<div id="ref-tenenhaus2008component" class="csl-entry" role="listitem">
+Tenenhaus, M. (2008). Component-based structural equation modelling. <em>Total Quality Management</em>, <em>19</em>(7-8), 871–886.
+</div>
+<div id="ref-tibshirani1996regression" class="csl-entry" role="listitem">
+Tibshirani, R. (1996). Regression shrinkage and selection via the lasso. <em>Journal of the Royal Statistical Society Series B: Statistical Methodology</em>, <em>58</em>(1), 267–288.
+</div>
+<div id="ref-widaman2023thinking" class="csl-entry" role="listitem">
+Widaman, K. F., &amp; Revelle, W. (2023). Thinking thrice about sum scores, and then some more about measurement and analysis. <em>Behavior Research Methods</em>, <em>55</em>(2), 788–806.
+</div>
+<div id="ref-wolds1980soft" class="csl-entry" role="listitem">
+Wolds, H. (1980). <em>Soft modeling: Intermediate between traditional model building and data analysis</em>.
+</div>
+<div id="ref-wolf2013sample" class="csl-entry" role="listitem">
+Wolf, E. J., Harrington, K. M., Clark, S. L., &amp; Miller, M. W. (2013). Sample size requirements for structural equation models: An evaluation of power, bias, and solution propriety. <em>Educational and Psychological Measurement</em>, <em>73</em>(6), 913–934.
+</div>
+<div id="ref-zou2005regularization" class="csl-entry" role="listitem">
+Zou, H., &amp; Hastie, T. (2005). Regularization and variable selection via the elastic net. <em>Journal of the Royal Statistical Society Series B: Statistical Methodology</em>, <em>67</em>(2), 301–320.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,216 @@
+---
+title: "Methods Draft"
+author: "Hsin"
+toc: true
+format:
+  html: 
+    html-math-method: katex
+editor: visual
+bibliography: Draft_citation.bib
+csl: apa-6th-edition.csl
+---
+
+# Structural Equation Modeling for Out-of-Sample Prediction: A Comparative Study of Methods.
+
+## 1. Introduction
+
+Predicting outcomes for individuals based on measured indicators is a popular task across psychology, health sciences, and social research in the recent years. Consider a concrete example: researchers have collected data from a sample of patients, measuring six items that assess mental health conditions (depression, stress, and related constructs) alongside a single item measuring quality of life. When new patients arrive in the clinic, clinicians and researchers face a practical question: how can we predict their quality of life based on their responses to the six mental health items? This predictive task exemplifies a class of problems that require statistical techniques collectively known as predictive modeling.
+
+Predictive modeling uses estimated parameters obtained from collected data to predict outcomes for new cases not included in the original sample, which is commonly referred to as out-of-sample prediction [@shmueli2016elephant]. A fundamental requirement for reliable predictions is the model's ability to accurately predict observable outcomes for such unseen data, as good performance on training data does not guarantee generalization to new cases. To evaluate a model's predictive performance, practitioners typically divide the dataset into training and test sets: the training set is used to estimate model parameters, while the test set evaluates how well the trained model generalizes to unseen data.
+
+Within this framework, regression models represent one of the most commonly employed approaches. Using our example, we can divide the dataset into training and test subsets, where the six mental health items serve as predictors ($x_{in}$) and quality of life serves as the outcome ($y_n$) (see Figure 1). A linear regression model based on the six item scores can be expressed as:
+
+$$
+y_n = \beta_0 + \sum_{i=1}^{6} \beta_i x_{in} + \varepsilon_n
+$$
+
+where $i$ indexes the six predictor items, $n$ indexes sample size, $\beta_0$ is the intercept, $\beta_i$ are regression coefficients, and $\varepsilon$ is the error term. Based on the training data, regression coefficients can be estimated using ordinary least squares (OLS) or penalized estimation methods (e.g., ridge regression, LASSO). Once estimated, the model parameters are applied to test data to generate predictions for the outcome variable.
+
+However, a critical assumption underlying linear regression is that predictor variables are measured without error. In practice, psychological and health-related latent variables (such as depression, stress, or anxiety) are typically measured through multiple indicators, each of which contains measurement error. Structural equation modeling (SEM) was developed precisely to address measurement error in indicators. SEM combines two interconnected components: a measurement model that links indicators to latent variables through factor loadings (or weights), and a structural model that specifies relationships among latent variables. Returning to our motivating example, psychological theory suggests that the six mental health items reflect two underlying latent constructs: depression ($\xi_1$; measured by the first three items) and stress ($\xi_2$; measured by the last three items). Each latent variable is linearly related to its indicators, and this relationship is captured by the factor loadings ($\lambda$). The two latent variables are then modeled as predictors of the outcome variable ($y$), with the strength of these predictive effects expressed by the regression coefficients ($\beta$) (see Figure 2).
+
+{Show two figures: one for regression model and one for SEM}
+
+SEM is now widely applied across psychology, organizational research, health sciences, and other domains where latent variables drive observed outcomes. To extend traditional SEM frameworks to out-of-sample prediction, researchers have proposed several distinct methodological approaches. @hair2017pls advocated for Partial Least Squares (PLS) approaches and their associated prediction capabilities. More recently, @de2023sem proposed a general SEM-based prediction rule applicable to covariance-based SEM. These developments reflect an important conceptual distinction which is researchers can make predictions in fundamentally different ways.
+
+Despite the growing development of SEM-based prediction methods over the past decade, the empirical literature has not systematically compared their predictive performance across different measurement structures and data conditions common in psychological assessment. While individual methods have been documented and recommended in methodological papers, questions remain regarding when each approach works best, how they perform relative to one another, and which factors (e.g., sample size, the strength of measurement model) influence their comparative effect
+
+The present study addresses this gap by conducting a comprehensive comparative analysis of SEM-based prediction methods for out-of-sample prediction. We compared six SEM-based approaches, two machine learning approaches and the typical sum scoring method which is total 9 methods. Our focus extends beyond explanatory adequacy to examine predictive performance: which method produces better accuracy of out-of-sample predictions across varying conditions? The goal is to provide researchers with practical guidance on method selection, enabling them to choose prediction approaches best suited to their research questions and data structures.
+
+## 2. SEM-Based Approach
+
+Depending on the estimation stage, SEM-based approaches can be classified into two categories: the one-stage and two-stage estimation approaches. In the one-stage estimation approach, all parts of the model, including the measurement and structural models, are estimated simultaneously. In contrast, the two-stage estimation approach separates the estimation process into two steps. In the first stage, the measurement model is estimated to obtain factor scores. In the second stage, these estimated factor scores are then used to estimate the structural model. A comparison of methods can be seen in Table 1. In the following, we introduce the methods included in our study according to this classification.
+
+### 2.1 One-Stage Estimation
+
+#### 2.1.1 Covariance-Based SEM (CB-SEM)
+
+CB-SEM is one of the most commonly used SEM method in psychology research for testing theoretical models involving latent factors. It usually relies on maximum likelihood (ML) estimation and uses iterative algorithms to minimize the difference between the observed and model-implied covariance matrices. As a one-stage estimation procedure, CB-SEM simultaneously estimates factor loadings and regression coefficients. However, factor scores are not directly estimated during this stage; instead, they can only be derived post hoc using methods such as the regression (Thurstone’s), least-squares, or Bartlett methods (see @takane2018comparisons for a detailed comparison).
+
+Despite its popularity, CB-SEM may become problematic when the number of estimated parameters approaches or exceeds the sample size. Its reliance on ML estimation and the simultaneous estimation of all model parameters increase the risk of biased estimates and non-convergence, particularly as model complexity increases [@wolf2013sample].
+
+In our simulation study, we employed the lavaan package [@rosseel2012lavaan] to estimate factor loadings and regression coefficients using ML estimation. For out-of-sample prediction, we obtained test data factor scores using the regression and Bartlett methods and applied them to the structural model estimated from the training data. While the regression method is the default in *lavaan*, prior evidence suggests that using Bartlett-type scoring in combination with consistent estimation procedures can yield better parameter recovery [@takane2018comparisons]. Therefore, we included both factor score approaches in our simulation to provide a more comprehensive comparison.
+
+#### 2.1.2 SEM-Based Prediction Rule
+
+The SEM-based prediction rule developed by @de2023sem extends the use of CB-SEM beyond explanatory analysis to predictive modeling. This method leverages the model-implied joint mean and covariance structure between observed predictors and outcomes to generate out-of-sample predictions. Specifically, after estimating a CB-SEM on a training dataset (using maximum likelihood or other suitable estimation methods), the fitted model provides estimates of the model-implied mean vectors ($\hat{\mu}_x$, $\hat{\mu}_y$) *and* covariance matrices ($\hat{\Sigma}_{xx}$, $\hat{\Sigma}_{xy}$), which define the joint multivariate normal distribution of predictors ($X$) and outcomes ($Y$). Predicted values for new observations ($x_0$) are then obtained from the conditional expectation which is
+
+$$
+\hat{y} = \hat{\mu}_y + \hat{\Sigma}_{yx} \hat{\Sigma}_{xx}^{-1} (x_0 - \hat{\mu}_x)
+$$
+
+Unlike traditional CB-SEM approaches that rely on estimated factor scores, the SEM-based prediction rule directly computes predicted values through the conditional distribution of the outcome variables.
+
+@de2023sem compared the prediction performance of the SEM-based prediction method with several machine learning approaches, including regularized regression methods and OLS. The results show that the SEM-based prediction rule outperformed these methods, particularly in small sample sizes, and remained robust to violations of normality. This suggests that the SEM-based prediction rule effectively accounts for measurement error and enables out-of-sample prediction within CB-SEM, even under limited data conditions. However, in cases where the SEM model is misspecified, one of the regularized regression methods, elastic net, demonstrated better prediction performance, especially with larger sample sizes. Therefore, while we expect the SEM-based prediction rule to outperform machine learning approaches in small samples with correctly specified models, the comparative performance across different SEM approaches remains underexplored.
+
+In the simulation study, we first use the *lavaan* package to get the model-implied joint mean and covariance of the observed variables of the training data then we use the *lavPredictY* function to get the predicted values directly.
+
+### 2.2 Two-Stage Estimation
+
+#### 2.2.1 Structural After Measurement (SAM)
+
+SAM follows a two-stage estimation which first estimates the parameters related to the measurement model using (multiple) confirmatory factor analysis (CFA), and then estimates the remaining parameters of the structural model based on the results from the previous stage. The advantages of SAM include greater robustness against local misspecifications, fewer convergence issues, and an expanded range of possible estimators [@dhaene2023evaluation].
+
+There are two different SAM approaches: local SAM and global SAM. The difference lies in how the structural parameters are obtained. In local SAM, the measurement model parameters are first estimated, and their point estimates are then used to compute the model-implied mean vector and variance-covariance matrix of the factor scores. These derived statistics subsequently serve as input for estimating the structural model parameters. In global SAM, the parameters of the measurement model are fixed, and only the structural parameters are freely estimated. In the study by @rosseel2022structural pointed out that local SAM generally performs slightly better than global SAM, especially in small samples based on the simulation results. In addition, the function *sam()* in *lavaan* package implements local SAM by default. Therefore, in our simulation study, we focus on the local SAM, and the simulation is based on the codes provided by @dhaene2023evaluation in the OSF repository: <https://osf.io/f5287/>.
+
+#### 2.2.2 PLS-SEM
+
+The partial least squares approach to SEM is a popular composite-based SEM methods which is developed by @wolds1980soft and @lohmoller2013latent. PLS-SEM comprises three key components: the inner model (structural model), the outer model (measurement model), and the weight relations. While both CB-SEM and PLS-SEM include structural and measurement models to represent the relationships among factors and their indicators, the weights are unique to the PLS approach. These weights link the indicators to their corresponding factors by forming factor scores. There are three main difference between CB-SEM and PLS-SEM:
+
+\(1\) Statistical Assumptions: Whereas CB-SEM requires multivariate normality distributional assumptions, PLS-SEM is a soft-modeling technique which makes fewer distributional assumptions on the data.
+
+\(2\) Estimation: In CB-SEM, the discrepancy between the estimated and sample covariance matrices is minimized (usually using ML) to estimate the model parameters in one stage, where as in PLS-SEM, the explained variance of the latent variables is maximized by a two-stage estimation in an iterative sequence of ordinary least squares (OLS) until convergence (e.g., @monecke2012sempls; @hair2011pls). The final measurement model weights are used to form the final factor scores which are used in (multiple) OLS regression(s) to estimate the final regression coefficients.
+
+\(3\) Factor scores: The factor scores are calculated as linear combinations of their indicators in PLS-SEM. Once calculated, these composite scores are treated as scores without measurement error and used directly in regression equations between constructs. This direct computation gives component-based models a greater advantage for predictive modeling, especially in situations with small sample sizes or complex model structures, where CB-SEM may encounter convergence or estimation difficulties [@tenenhaus2008component; @hair2017mirror].
+
+However, when the true data-generating process follows a common factor model, PLS-SEM has been shown to overestimate factor loadings and underestimate structural path coefficients [@dijkstra2015consistent]. To account for this limitation, our simulation study also considers a composite-based data-generating process, allowing for a more comprehensive comparison of model performance. In conducting the PLS-SEM simulations, we followed @ray2021seminr and used the *SEMinR* package to obtain the predicted values.
+
+#### 2.2.3 Sparse generalized canonical correlation analysis (SGCCA)
+
+SGCCA extends PLS-SEM to address variable selection issues, making it suitable for identifying key indicators and uncovering latent structures in a data-driven manner [@Tenenhaus2014Variable]. It builds on the Regularized Generalized Canonical Correlation Analysis (RGCCA) framework [@tenenhaus2011regularized] by introducing penalization on the outer weights, thereby achieving sparsity and retaining only the most relevant indicators for each latent factor. In contrast to CB-SEM and PLS-SEM, which are typically confirmatory approaches, SGCCA serves as a more exploratory method that identifies latent structures and relationships in a data-driven way. We include SGCCA in our comparison because it is a composite-based approach that offers an exploratory, data-driven alternative to CB-SEM and PLS-SEM while performing variable selection.
+
+In this study, we use the package *RGCCA* [@RGCCA] to obtain the outer weights ($\mathbf{w}$) from the measurement model in the first stage and calculate the factor scores by $\hat{\boldsymbol{\eta}}=\mathbf{w}\mathbf{x}$. In the second stage, we estimate the inner weights from the structural model using OLS regression.
+
+#### 2.2.4 Regularized Exploraty Structural Equation Modeling (RESEM)
+
+RESEM is a two-stage approach developed for exploratory factor analysis that integrates regularization techniques into the estimation process [@le2024exploratory]. In the first stage, the measurement model is estimated using a least-squares approach, where regularization methods such as the LASSO penalty or cardinality constraints are applied to induce sparsity in the loading matrix. This encourages a simple structure in which each indicator primarily loads on a single factor, facilitating clearer factor interpretation and improving estimation stability. In the second stage, the estimated factor scores are used to model structural relationships among the latent factors, typically via multiple linear regression.
+
+A distinctive feature of RESEM is that it allows the unique error variances in the measurement model to be weakly correlated—an approach known as the approximate factor model. This relaxes the assumption of uncorrelated errors in the traditional common factor model and can improve the robustness of factor loading and score estimation. While RESEM was originally proposed to address challenges in high-dimensional settings, its regularization framework and flexible modeling of residuals make it a valuable method for comparison in a broader range of applications.
+
+This study utilized the functions provided by @le2024exploratory, which are available on GitHub at <https://github.com/trale97/RegularizedLSLV>
+
+## 3. Machine learning approach
+
+Predictive modeling is a key focus in machine learning, which emphasizes learning patterns from data to make generalizable predictions, often without strong assumptions about the underlying data-generating process. Unlike SEM-based approaches, which explicitly account for measurement error and emphasize parameter estimation and theory testing, machine learning methods typically do not model measurement error and instead focus on optimizing predictive performance, often through regularization and cross-validation techniques. In our study, we concluded two machine learning methods: (1) the OLS regression, and (2) the elastic net.
+
+### 3.1 OLS regression model
+
+Linear regression is one of the foundational model in machine learning, and it is most commonly estimated using OLS. However, it is well known that OLS often performs poorly in terms of both prediction accuracy and model interpretability. Hence, OLS is included in this study as a baseline method.
+
+### 3.2 Elastic net
+
+To address limitations of OLS, various regularized regression methods have been proposed. One of the most well-known is the LASSO [@tibshirani1996regression], which improves predictive performance and enables automatic variable selection through an L1-penalty on the regression coefficients. Due to the nature of this penalty, LASSO performs both continuous shrinkage and automatic variable selection simultaneously. However, as noted by @zou2005regularization, LASSO tends to perform poorly in variable selection when the number of predictors is much larger than the number of observations. To address this issue, they proposed a new method called elastic net, which combines the penalties of both LASSO and ridge regression. While LASSO encourages sparsity, ridge regression adds a penalty to the size of the coefficients, which helps reduce variance and handle multicollinearity effectively. By combining these two penalties, elastic net enables variable selection while maintaining model stability in the presence of highly correlated predictors.
+
+We include elastic net in our comparison since @de2023sem indicates that, although SEM-based prediction performs well in small and correctly specified samples, elastic net achieves superior prediction when the SEM model is misspecified or with larger datasets. We use the *glmnet* package [@friedman2021package] to perform the elastic net simulation. Based on the training data, cross-validation is carried out to determine the mixing parameter ($\alpha$) and the regularization parameter ($\lambda$). Once these parameters are selected, the regression coefficients are estimated using the training data and then fixed. The model is subsequently applied to the test data to evaluate its prediction performance.
+
+## 4. Sum Scoring Approach
+
+In psychological research, the sum scoring method is a common practice. It assumes that all items contribute equally to the underlying construct and that the error variances are identical across items, which is referred to as the parallel model in psychometric terms [@mcneish2020thinking]. Based on this assumption, researchers often sum items that are theoretically or empirically supported (e.g., through factor analysis) to load on the same factor. The resulting sum scores are then used in linear regression to examine relationships between latent factors. When speed and simplicity matter more than precision, such as in clinical screening tools, sum scoring method may be sufficient. However, in research settings where scales are used to investigate relationships between latent factors, the assumption of equal item importance, unidimensionality and neglect of measurement error can undermine validity, reliability, and classification accuracy, even when sum scores and factor scores are highly correlated [@widaman2023thinking; @mcneish2023psychometric].
+
+In our simulation study, we conducted exploratory factor analysis (EFA) using the *psych* package [@revelle2015package] on the training dataset and computed sum scores based on the resulting factor structure.
+
+## 5. Simulation Study
+
+### 5.1 Design
+
+The model settings for this simulation study are based on @de2023sem. In the structural model, nine latent variables ($\eta_x$) predict one outcome indicator ($y$). Each latent variable is measured by four observed indicator items, resulting in a total of 37 observed (simulated) variables (see Figure 1).
+
+![](images/clipboard-1721108588.png){width="301"}
+
+Figure 1. Fully reflective SEM for the simulation study
+
+In the simulation we manipulated four factors: data generation, sample size, strength of measurement model, and strength of the structural model.
+
+\(1\) Data generation methods with two levels: factor-based and composite-based data generation.
+
+The factor-based data generation procedure follows the approach described in @de2023sem. Factor scores were first generated from a multivariate distribution based on the covariance matrix reported in their empirical study. Next, the indicator values for the nine latent variables were computed using the specified loadings and factor scores. The residual variances of the indicators were defined as $1-\lambda^2$, where $\lambda$ represents the factor loading, ensuring that each indicator has unit variance. The predicted indicator was then calculated from the factor scores and regression coefficients, with its variance also set to one.
+
+For the composite-based model, three scenarios can be distinguished in general: formative–formative (F–F), formative–reflective (F–R), and reflective–reflective (R–R). @schlittgen2020data demonstrated a composite-based data generation procedure that produces data from composite-based populations using the *cbsem* R package across all these scenarios. In this study, the F–F scenario was employed. The procedure requires the specification of path coefficients, weights, and the variances and covariances of the exogenous constructs (see the vignette of the cbsem R package for further details) [@schlittgen2020r].
+
+\(2\) Sample size of the training set with four levels: 100, 200, 500, 1000
+
+The training sample size factor includes four levels: 100, 200, 500, and 1,000, representing a broad range of conditions. The test set size is fixed at 1,000 observations across all conditions.
+
+\(3\) Strength of the relationships in the measurement model with two levels: weak and strong.
+
+In the weak condition, factor loadings are drawn from a uniform distribution between 0.20 and 0.50. In the strong condition, factor loadings are also drawn from a uniform distribution between 0.50 and 0.80. Item means are generated from a uniform distribution ranging from 1.50 to 3.00.
+
+\(4\) Strength of the relationships in the structural model with two levels: weak and strong.
+
+For the weak condition, regression coefficients are drawn from a uniform distribution between 0.15 and 0.25. For the strong condition, coefficients are drawn from a uniform distribution between 0.25 and 0.40. The signs of the regression coefficients match those used in the empirical example reported by @de2023sem.
+
+### 5.2 Criteria
+
+To obtain a full picture of not only the predictive power of each method but also how well its explanatory power performs, three aspects are analyzed for each method: the model’s predictive power, and the parameter recovery of the structural and measurement parts.
+
+#### 5.2.1 Predictive performance
+
+To evaluate predictive performance, we examine how closely the estimated predicted values ($\hat{y}_i$) match the true values ($y_i$) based on the test data. Three criteria are employed: the mean absolute error (MAE), root mean square error (RMSE), and out-of-sample $R^2$.
+
+The MAE measures the average magnitude of the errors in a set of predictions without considering their direction. It is the average absolute differences between the predictions and the actual observations, with all the individual differences having equal weight. $$
+\text{MAE}=\frac{1}{n \cdot r}\sum_{i=1}^{n}\left|\,y_i-\hat{y}_i\,\right|
+$$
+
+where $n$ and $r$ are the sample size and the number of replications, respectively.
+
+The RMSE is the square root of the average of the squared differences between the predictions and the actual observations.
+
+$$
+\text{RMSE}=\frac{1}{r}\cdot\sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(y_i-\hat{y}_i\right)^2}
+$$
+
+The out-of-sample $R^2$ [@park2023extending] is equivalent to the $R^2$ measure for OLS, but applied for an independent out-of-sample test set.
+
+$$
+R^{2}_{\text{out-of-sample}} \;=\; 1 \;-\;
+\frac{\left\lVert y_i - \hat{y}_i \right\rVert^{2}_{2}}
+     {\left\lVert y_i \right\rVert^{2}_{2}}
+$$
+
+The lower MAE, RMSE and out-of-sample $R^2$ indicate higher predicted performance for the method.
+
+#### 5.2.2 Structural model parameter recovery
+
+To assess the parameter recovery of the structural model, we evaluate the differences between the estimated regression coefficients ($\hat{\beta}$) obtained from the training data and the true coefficients ($\beta$) using two criteria: MAE and RMSE.
+
+$$ \text{MAE} \;=\; \frac{1}{n \cdot r} \sum_{i=1}^n \bigl|\hat\beta^{} - \beta\bigr|. $$
+
+$$ \mathrm{RMSE} \;=\; \frac{1}{r}\cdot\sqrt{\frac{1}{n} \sum_{i=1}^n \bigl(\hat\beta - \beta\bigr)^{2}}. $$
+
+#### 5.2.3 Measurement model parameter recovery
+
+To assess the parameter recovery of the measurement model, congruence coefficient and zero/nonzero recovery rate PL are used to check the loadings' recovery performance.
+
+The Tucker’s congruence coefficient measures the similarity between the estimated and true factor loadings. It is calculated as the cosine similarity between loading vectors and ranges from −1 to 1, with a value of 1 indicating perfect recovery. To evaluate the accuracy of loading recovery in the measurement model, we follow the guideline by @lorenzo2006tucker: a congruence coefficient greater than 0.95 indicates excellent recovery, values between 0.85 and 0.94 indicate fair to good recovery, and values below 0.85 suggest poor recovery. We use the function *factor.congruence()* from *psych* package.
+
+Zero/nonzero recovery rate PL represents the proportion of correctly recovered loadings (both zeros and nonzeros) relative to the total number of true loadings. A higher PL value indicates better structural recovery, with PL = 1 representing perfect recovery (all true zeros and nonzeros correctly identified), while lower values suggest poorer recovery accuracy.
+
+$$
+PL \;=\; 
+\frac{
+  \#\text{ correctly nonzero loadings}
+  \;+\;
+  \#\text{ correctly identified zero loadings}
+}{
+  \#\text{ loadings in }{\text{P}}_{\text{true}}
+}\,.
+$$
+
+### 5.3 Results
+
+#### 5.3.1 Predictive power
+
+#### 5.3.2 Structure parameter recovery
+
+#### 5.3.3 Measurement parameter recovery
+
+## 6. Conclusion
